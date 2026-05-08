@@ -60,10 +60,16 @@
   tbody tr:hover td { background: #fafaf8; }
   .serie-nome { font-weight: 500; font-size: 13px; min-width: 140px; cursor:pointer; }
   .serie-nome:hover { text-decoration:underline; text-decoration-color:#bbb; color:#000; }
+  tbody tr { transition: background 0.1s; }
   /* ── Modal de Resumo ── */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; display:none; align-items:center; justify-content:center; padding:1rem; }
   .modal-overlay.open { display:flex; }
-  .modal { background:#fff; border-radius:14px; max-width:520px; width:100%; padding:28px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.25); animation:fadeUp 0.2s ease; }
+  .modal { background:#fff; border-radius:14px; max-width:560px; width:100%; padding:24px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.25); animation:fadeUp 0.2s ease; }
+  .modal-inner { display:flex; gap:18px; align-items:flex-start; }
+  .modal-cover { width:90px; min-width:90px; height:130px; border-radius:8px; object-fit:cover; background:#f0efe8; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.15); flex-shrink:0; }
+  .modal-cover img { width:100%; height:100%; object-fit:cover; border-radius:8px; }
+  .modal-cover-placeholder { font-size:28px; color:#ccc; }
+  .modal-info { flex:1; min-width:0; }
   @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   .modal-close { position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#aaa; line-height:1; padding:4px; }
   .modal-close:hover { color:#333; }
@@ -74,7 +80,9 @@
   .modal-body.loading::after { content:''; display:inline-block; width:10px; height:10px; border:2px solid #ccc; border-top-color:#555; border-radius:50%; animation:spin 0.7s linear infinite; margin-left:8px; vertical-align:middle; }
   @keyframes spin { to{transform:rotate(360deg)} }
   .modal-loading-txt { color:#aaa; font-style:italic; font-size:13px; }
-  .modal-dica { margin-top:16px; padding-top:12px; border-top:0.5px solid #f0efe8; font-size:11px; color:#bbb; }
+  .modal-dica { margin-top:16px; padding-top:12px; border-top:0.5px solid #f0efe8; font-size:11px; color:#bbb; display:flex; align-items:center; justify-content:space-between; }
+  .btn-reload-capa { font-size:11px; color:#888; background:none; border:0.5px solid #ddd; border-radius:6px; padding:3px 8px; cursor:pointer; white-space:nowrap; }
+  .btn-reload-capa:hover { background:#f5f4f0; color:#555; }
   .autor-nome { color: #777; font-size: 12px; min-width: 120px; }
   .seq-col { min-width: 240px; }
   .seq-item { display: flex; align-items: flex-start; gap: 5px; padding: 2px 0; font-size: 12px; line-height: 1.5; }
@@ -206,7 +214,6 @@ const livros = [
   {serie:"Assistente do Vilão",resumo:"Evie Sage consegue um emprego improvável: assistente de um vilão declarado que governa com mão de ferro. Enquanto tenta sobreviver ao trabalho mais caótico de sua vida, ela descobre que o 'vilão' é muito mais complexo do que parece. A série mistura fantasia, humor e romance com um protagonismo feminino afiado. O gancho é a química improvável entre a assistente pragmática e seu enigmático chefe.",autor:"Hannah Nicole Maehrer",tipo:"serie",genero:"fantasia",seq:[{t:"Aprendiz do Vilão",s:"tem",lido:false},{t:"Assistente do Vilão",s:"tem",lido:false},{t:"Aliada do Vilão",s:"tem",lido:false}],plano:"sugestao",ordemSug:8,status:"completa"},
   {serie:"Até o Último de Nós",resumo:"Duas pessoas que nunca deveriam ter se encontrado ficam presas juntas durante uma tempestade. O que começa como um encontro fortuito se torna uma corrida contra o tempo, com segredos que mudam tudo. McFadden usa o isolamento físico para criar tensão psicológica crescente. O gênero oscila deliberadamente entre romance e suspense.",autor:"Freida McFadden",tipo:"unico",genero:"suspense",seq:[{t:"Até o Último de Nós",s:"tem",lido:false}],plano:null,status:"unico"},
   {serie:"Avalon",resumo:"Centrada em Morgaine, meio-irmã do Rei Arthur, a saga reimagina a lenda arturiana sob a perspectiva das sacerdotisas da ilha sagrada de Avalon. Em um mundo onde o paganismo cede espaço ao cristianismo, Morgaine luta para preservar os ritos de sua deusa. Marion Zimmer Bradley constrói uma das maiores releituras feministas da literatura fantástica. Épico, histórico e emocionalmente devastador.",autor:"Marion Zimmer Bradley & Diana L. Paxson",tipo:"serie",genero:"fantasia",seq:[{t:"As Brumas de Avalon",s:"tem",lido:false},{t:"A Sacerdotisa de Avalon",s:"tem",lido:false},{t:"A Casa da Floresta",s:"tem",lido:false},{t:"Corvos de Avalon",s:"tem",lido:false},{t:"Ancestrais de Avalon",s:"tem",lido:false},{t:"A Espada de Avalon",s:"tem",lido:false}],plano:null,status:"completa"},
-  {serie:"A Ave e o Coração de Pedra",resumo:"Em um mundo de vampiros e mortais, Oraya cresceu como humana no palácio do Rei Vampiro. Quando é forçada a competir em um torneio mortal, precisa aliar-se ao competidor mais perigoso de todos. Carissa Broadbent construja um romance de fantasia sombria com uma protagonista tenaz e um romance cheio de tensão. O worldbuilding de vampiros é original e bem construído.",autor:"Carissa Broadbent",tipo:"unico",genero:"fantasia",seq:[{t:"A Ave e o Coração de Pedra",s:"tem",lido:true}],plano:null,status:"unico"},
   {serie:"A Ascensão das Estrelas",resumo:"Uma jovem com poderes ligados às estrelas é recrutada para uma ordem de guardiões que protege o mundo de ameaças sobrenaturais. Imani Erriu constrói um romance de fantasia com um sistema de magia celestial original e uma protagonista que descobre que seu passado foi construído sobre mentiras. O gancho é a revelação gradual do verdadeiro propósito para o qual ela foi criada.",autor:"Imani Erriu",tipo:"unico",genero:"fantasia",seq:[{t:"A Ascensão das Estrelas",s:"tem",lido:false}],plano:null,status:"unico"},
   {serie:"A Beira da Loucura",resumo:"Uma mulher começa a questionar sua própria sanidade após eventos perturbadores em seu novo lar. B.A. Paris constrói um thriller psicológico baseado no isolamento e na manipulação doméstica. O leitor é mantido em dúvida constante sobre o que é real e quem está por trás do terror. A tensão sufocante é a marca registrada da autora.",autor:"B. A. Paris",tipo:"unico",genero:"suspense",seq:[{t:"A Beira da Loucura",s:"tem",lido:true}],plano:null,status:"unico"},
   {serie:"A Chama de Ember",resumo:"Dois reinos, dois lados opostos de uma guerra mágica — e uma jovem cujos poderes a colocam no centro do conflito. Colleen Houck usa elementos da mitologia egípcia para construir um romance de fantasia com aventura e sentimentos intensos. A protagonista precisa escolher entre dever e coração em um cenário de poderes antigos e sacrifícios reais. Ideal para fãs de fantasias com mitologia como base.",autor:"Colleen Houck",tipo:"unico",genero:"fantasia",seq:[{t:"A Chama de Ember",s:"tem",lido:false}],plano:null,status:"unico"},
@@ -258,7 +265,7 @@ const livros = [
   {serie:"Conto de Fadas",resumo:"Charlie Reade salva a vida de um homem misterioso e, em gratidão, herda uma casa, um cachorro e um portal para um mundo subterrâneo em colapso. No outro lado, ele encontra um reino dominado por uma criatura sombria. King usa os elementos dos contos de fadas clássicos com sua marca inconfundível de horror e emoção. Uma homenagem ao fantástico que é também uma obra profundamente pessoal.",autor:"Stephen King",tipo:"unico",genero:"fantasia",seq:[{t:"Conto de Fadas",s:"tem",lido:false}],plano:null,status:"unico"},
   {serie:"Covenant",resumo:"Alexandria Andros é uma half-blood — metade humana, metade deusa grega — treinando para lutar contra daemons em um mundo paralelo ao nosso. Ela carrega um segredo que pode destruir o equilíbrio entre puros e meio-sangues. Entre aulas de combate e revelações sobre sua origem, Alex descobre que sua maior ameaça está mais perto do que imagina. A série mistura mitologia grega com ação e romance intenso.",autor:"Jennifer L. Armentrout",tipo:"serie",genero:"fantasia",seq:[{t:"Meio-Sangue",s:"tem",lido:false},{t:"Puros",s:"tem",lido:false},{t:"Divindade",s:"tem",lido:false},{t:"Apôlion",s:"tem",lido:false},{t:"A Sentinela (#5)",s:"tem",lido:false}],plano:"sugestao",ordemSug:9,status:"completa"},
   {serie:"Crescent City",resumo:"Bryce Quinlan é uma meio-fae que vive em Lunathion, a capital de um mundo urbano onde humanos, fae, vampiros e anjos coexistem. Quando sua melhor amiga é assassinada, Bryce entra em uma investigação que abala as fundações do poder da cidade. A parceria com o agente Hunt Athalar, um anjo caído, é o coração da série. Sarah J. Maas expande seu universo com um ritmo mais adulto e sombrio.",autor:"Sarah J. Maas",tipo:"serie",genero:"fantasia",seq:[{t:"Casa de Terra e Sangue",s:"tem",lido:true},{t:"Casa de Céu e Sopro",s:"tem",lido:true},{t:"Casa de Chama e Sombra",s:"tem",lido:true}],plano:null,status:"completa"},
-  {serie:"Crowns of Nyaxia",resumo:"Oraya cresceu como humana no palácio do Rei Vampiro, sobrevivendo por anos graças a um segredo guardado a sete chaves. Quando é forçada a competir em um torneio mortal entre vampiros, precisa aliar-se ao competidor mais perigoso. Carissa Broadbent cria um romance de fantasia sombria com worldbuilding rico e um romance cheio de tensão genuína. A série é conhecida pela reviravolta de identidade que muda tudo.",autor:"Carissa Broadbent",tipo:"serie",genero:"fantasia",seq:[{t:"A Serpente e as Asas Feitas de Vidro",s:"tem",lido:true},{t:"Coletânea 1.5",s:"tem",lido:false},{t:"As Cinzas e o Rei Maldito",s:"tem",lido:true},{t:"The Fallen and the Kiss of Dusk",s:"tem",lido:false}],plano:"proximo",ordemSug:3,status:"completa"},
+  {serie:"Coroas de Nyaxia",resumo:"Em um universo de vampiros, deuses e magia sombria, a série é dividida em três duologias. Na 1ª, Oraya — humana criada pelo Rei Vampiro — compete em torneio mortal. Na 2ª, Mische, transformada em vampira à força, embarca numa missão ao submundo com o príncipe Asar. Na 3ª duologia, ainda em publicação, uma nova protagonista enfrenta os próprios deuses. Carissa Broadbent é bestseller #1 do New York Times — cada duologia foca um casal diferente no mesmo universo rico.",autor:"Carissa Broadbent",tipo:"serie",genero:"fantasia",seq:[{t:"── Duologia 1: Nascidos da Noite ──",s:"tem",lido:false},{t:"1. A Serpente e as Asas Feitas de Vidro",s:"tem",lido:true},{t:"2. As Cinzas e o Rei Maldito pelas Estrelas",s:"tem",lido:true},{t:"Extra: Coletânea 1.5 (Six Scorched Roses)",s:"tem",lido:false},{t:"── Duologia 2: Nascidos da Sombra ──",s:"tem",lido:false},{t:"3. A Ave e o Coração de Pedra",s:"tem",lido:true},{t:"4. The Fallen and the Kiss of Dusk",s:"tem",lido:false},{t:"── Duologia 3: Nascidos do Sangue ──",s:"lan",lido:false},{t:"5. The Lion and the Deathless Dark (ago/2026)",s:"lan",lido:false},{t:"6. Livro 6 (sem título confirmado)",s:"lan",lido:false}],plano:"proximo",ordemSug:3,status:"aguarda"},
   {serie:"Crônica do Matador do Rei",resumo:"Kvothe narra sua própria lenda em três dias — como se tornou o maior mágico, músico e ladrão de seu tempo. A magia é baseada em sympathy, um sistema racional e elegante de manipulação de energia. Patrick Rothfuss constrói uma narrativa densa, poética e apaixonante. Considerada uma das melhores obras de fantasia épica do século XXI, apesar do terceiro volume ainda esperado.",autor:"Patrick Rothfuss",tipo:"serie",genero:"fantasia",seq:[{t:"O Nome do Vento",s:"tem",lido:true},{t:"O Temor do Sábio",s:"tem",lido:true},{t:"A Música do Silêncio (novela)",s:"tem",lido:false},{t:"O Estreito Caminho (novela)",s:"tem",lido:false},{t:"The Doors of Stone (#3)",s:"lan",lido:false}],plano:null,status:"aguarda"},
   {serie:"Crônicas de Nárnia",resumo:"Sete crianças, em diferentes momentos, descobrem portais para Nárnia — um mundo mágico habitado por animais falantes e governado pelo leão Aslan. Cada volume é uma aventura independente conectada por temas de sacrifício, redenção e esperança. C.S. Lewis criou um dos universos fantásticos mais duradouros da literatura. Clássico intemporal que funciona tanto para crianças quanto para adultos.",autor:"C.S. Lewis",tipo:"serie",genero:"fantasia",seq:[{t:"O Sobrinho do Mago",s:"tem",lido:false},{t:"O Leão, a Feiticeira e o Guarda-Roupa",s:"tem",lido:false},{t:"O Cavalo e Seu Menino",s:"tem",lido:false},{t:"O Príncipe Caspian",s:"tem",lido:false},{t:"A Viagem do Peregrino da Alvorada",s:"tem",lido:false},{t:"A Cadeira de Prata",s:"tem",lido:false},{t:"A Última Batalha",s:"tem",lido:false}],plano:null,status:"completa"},
   {serie:"Crônicas de Spiderwick",resumo:"Os gêmeos Jared e Simon Grace, junto da irmã Mallory, descobrem no sótão da mansão do bisavô um guia secreto sobre o mundo das fadas. Ao abri-lo, atraem a atenção de criaturas do folclore que querem o livro de volta. A série explora o mundo oculto que coexiste com o humano, com duendes, ogros e espíritos antigos. Ideal para fãs de fantasia com base no folclore europeu.",autor:"Tony DiTerlizzi",tipo:"serie",genero:"fantasia",seq:[{t:"O Guia de Campo",s:"tem",lido:false},{t:"A Pedra da Vidência",s:"tem",lido:false},{t:"A Fuga do Duende",s:"tem",lido:false},{t:"A Árvore Ironwood",s:"tem",lido:false},{t:"A Ira do Muldumal",s:"tem",lido:false}],plano:null,status:"completa"},
@@ -414,8 +421,10 @@ function render(){
         return `<div class="seq-item"><span class="ic ${icC}">${icI}</span>${l.tipo!=='unico'?`<span class="seq-num">${i+1}.</span>`:''}<span class="${tc}">${hl(b.t,q)}</span></div>`;
       }).join('');
       const livroIdx = livros.findIndex(x=>x.serie===l.serie);
-      return `<tr>
-        <td class="serie-nome" onclick="abrirResumo(${livroIdx})">${hl(l.serie,q)}</td>
+      return `<tr onclick="abrirResumo(${livroIdx})" style="cursor:pointer">
+        <td class="serie-nome"
+          onmouseenter="iniciarHover(${livroIdx})"
+          onmouseleave="cancelarHover()">${hl(l.serie,q)}</td>
         <td class="autor-nome">${hl(l.autor,q)}</td>
         <td class="seq-col">${seqHtml}</td>
         <td class="status-cell">
@@ -452,10 +461,25 @@ document.getElementById('searchBox').addEventListener('input',render);
 
 // ── Modal de Resumo ────────────────────────────────
 const generoNome={fantasia:"Fantasia",suspense:"Suspense/Thriller",romance:"Romance/Ficção",scifi:"Ficção Científica"};
+let hoverTimer = null;
+let modalAberto = false;
+let livroAtual = null;
+
+function iniciarHover(idx) {
+  cancelarHover();
+  hoverTimer = setTimeout(() => { abrirResumo(idx); }, 500);
+}
+
+function cancelarHover() {
+  if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+}
 
 function abrirResumo(idx){
   const livro = livros[idx];
   if(!livro) return;
+  cancelarHover();
+  modalAberto = true;
+  livroAtual = livro;
   const overlay=document.getElementById('modalOverlay');
   document.getElementById('modalSerie').textContent=livro.serie;
   document.getElementById('modalAutor').textContent=livro.autor;
@@ -467,16 +491,99 @@ function abrirResumo(idx){
     `<span class="badge ${classMap[livro.status]||'b-unico'}">${stMap[livro.status]||livro.status}</span>`;
   const body=document.getElementById('modalBody');
   body.classList.remove('loading');
-  if(livro.resumo){
-    body.innerHTML=livro.resumo;
-  } else {
-    body.innerHTML='<span style="color:#aaa;font-style:italic">Resumo não disponível para este título.</span>';
-  }
+  body.innerHTML = livro.resumo || '<span style="color:#aaa;font-style:italic">Resumo não disponível.</span>';
   overlay.classList.add('open');
   document.body.style.overflow='hidden';
+  // Buscar capa
+  buscarCapa(livro);
+}
+
+async function buscarCapa(livro) {
+  const coverEl = document.getElementById('modalCover');
+  coverEl.innerHTML = '<span class="modal-cover-placeholder">📚</span>';
+
+  const cacheKey = 'capa_' + livro.serie.replace(/[^a-zA-Z0-9]/g,'_').slice(0,40);
+
+  // 1. Cache local
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      coverEl.innerHTML = `<img src="${cached}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
+      return;
+    }
+  } catch(e) {}
+
+  // 2. Definir título de busca
+  // Para séries: usar título do 1º livro. Para únicos: usar nome do livro (= serie)
+  let titulo = livro.serie;
+  if (livro.tipo === 'serie' && livro.seq) {
+    const primeiro = livro.seq.find(b => b.s === 'tem' && !b.t.startsWith('──')) || livro.seq[0];
+    titulo = primeiro.t
+      .replace(/^[\d]+[\.\)]\s*/, '').replace(/#\d+.*$/, '')
+      .replace(/\(.*?\)/g, '').replace(/\s*[-–—]\s*(sem tradução|aguarda).*$/i, '')
+      .trim();
+  }
+
+  function normalizar(s) {
+    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,'').trim();
+  }
+
+  // Match forte: pelo menos 60% das palavras do título buscado devem aparecer no retornado
+  function matchForte(retornado, buscado) {
+    const palavrasBuscadas = normalizar(buscado).split(/\s+/).filter(p=>p.length>2);
+    const ret = normalizar(retornado);
+    if (!palavrasBuscadas.length) return false;
+    const matches = palavrasBuscadas.filter(p => ret.includes(p)).length;
+    return matches / palavrasBuscadas.length >= 0.6;
+  }
+
+  async function buscar(q) {
+    try {
+      const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8`);
+      const d = await r.json();
+      if (!d.items) return null;
+      // Preferir match forte com título E autor
+      for (const item of d.items) {
+        const t = item.volumeInfo?.title || '';
+        const a = (item.volumeInfo?.authors||[]).join(' ');
+        const thumb = item.volumeInfo?.imageLinks?.thumbnail;
+        if (thumb && matchForte(t, titulo) && matchForte(a, livro.autor)) return thumb;
+      }
+      // Fallback: só match forte com título
+      for (const item of d.items) {
+        const t = item.volumeInfo?.title || '';
+        const thumb = item.volumeInfo?.imageLinks?.thumbnail;
+        if (thumb && matchForte(t, titulo)) return thumb;
+      }
+      return null;
+    } catch(e) { return null; }
+  }
+
+  // Tentativas em ordem de precisão
+  let url = await buscar(`intitle:"${titulo}" inauthor:"${livro.autor}"`);
+  if (!url) url = await buscar(`intitle:"${titulo}"`);
+
+  if (!url) return;
+
+  url = url.replace('http://','https://').replace('zoom=1','zoom=2');
+  try { localStorage.setItem(cacheKey, url); } catch(e) {}
+  const el = document.getElementById('modalCover');
+  if (el) el.innerHTML = `<img src="${url}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
+}
+
+function recarregarCapa() {
+  if (!livroAtual) return;
+  // Limpar cache e rebuscar
+  try {
+    const cacheKey = 'capa_' + livroAtual.serie.replace(/[^a-zA-Z0-9]/g,'_').slice(0,40);
+    localStorage.removeItem(cacheKey);
+  } catch(e) {}
+  buscarCapa(livroAtual);
 }
 
 function closeModal(){
+  if(!modalAberto) return;
+  modalAberto = false;
   document.getElementById('modalOverlay').classList.remove('open');
   document.body.style.overflow='';
 }
@@ -485,13 +592,23 @@ render();
 </script>
 <!-- Modal de Resumo -->
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
+  <div class="modal" onmouseenter="cancelarHover()">
     <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-serie" id="modalSerie"></div>
-    <div class="modal-autor" id="modalAutor"></div>
-    <div class="modal-badges" id="modalBadges"></div>
-    <div class="modal-body" id="modalBody"><span class="modal-loading-txt">Buscando resumo…</span></div>
-    <div class="modal-dica">💡 Clique em qualquer série ou livro para ver o resumo</div>
+    <div class="modal-inner">
+      <div class="modal-cover" id="modalCover">
+        <span class="modal-cover-placeholder">📚</span>
+      </div>
+      <div class="modal-info">
+        <div class="modal-serie" id="modalSerie"></div>
+        <div class="modal-autor" id="modalAutor"></div>
+        <div class="modal-badges" id="modalBadges"></div>
+        <div class="modal-body" id="modalBody"></div>
+      </div>
+    </div>
+    <div class="modal-dica">
+      <span>💡 Passe o mouse ou clique em qualquer série para ver o resumo</span>
+      <button class="btn-reload-capa" onclick="recarregarCapa()" title="Buscar outra capa">🔄 Trocar capa</button>
+    </div>
   </div>
 </div>
 </body>
