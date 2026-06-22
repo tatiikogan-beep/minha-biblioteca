@@ -171,6 +171,10 @@
   .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#1a1a1a; color:#fff; padding:10px 20px; border-radius:50px; font-size:13px; z-index:2000; opacity:0; transition:opacity 0.2s; pointer-events:none; }
   .toast.show { opacity:1; }
 
+
+  .btn-upload-capa { font-size:11px; color:#185FA5; background:none; border:0.5px solid #185FA5; border-radius:6px; padding:3px 8px; cursor:pointer; white-space:nowrap; }
+  .btn-upload-capa:hover { background:#E8F0FE; }
+  .input-capa-hidden { display:none; }
 </style>
 </head>
 <body>
@@ -607,14 +611,14 @@ function abrirResumo(idx){
   buscarCapa(livro);
 }
 
-// Cache em memória (funciona em arquivo local e GitHub Pages)
+// Cache em memória (sessão) + localStorage (persistente)
 const capaCache = {};
 
 async function buscarCapa(livro) {
   const coverEl = document.getElementById('modalCover');
   coverEl.innerHTML = '<span class="modal-cover-placeholder">📚</span>';
 
-  const cacheKey = livro.serie;
+  const cacheKey = 'capa_' + livro.serie.replace(/[^a-zA-Z0-9]/g,'_').slice(0,40);
 
   // 1. Cache em memória
   if (capaCache[cacheKey]) {
@@ -622,7 +626,17 @@ async function buscarCapa(livro) {
     return;
   }
 
-  // 2. Definir título de busca
+  // 2. localStorage
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      capaCache[cacheKey] = cached;
+      coverEl.innerHTML = `<img src="${cached}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
+      return;
+    }
+  } catch(e) {}
+
+  // 3. Definir título de busca
   let titulo = livro.serie;
   if (livro.tipo === 'serie' && livro.seq) {
     const primeiro = livro.seq.find(b => b.s === 'tem' && !b.t.startsWith('──')) || livro.seq[0];
@@ -666,20 +680,36 @@ async function buscarCapa(livro) {
 
   let url = await buscar(`intitle:"${titulo}" inauthor:"${livro.autor}"`);
   if (!url) url = await buscar(`intitle:"${titulo}"`);
-  if (!url) url = await buscar(`${titulo} ${livro.autor}`);
 
   if (!url) return;
 
   url = url.replace('http://','https://').replace('zoom=1','zoom=2');
   capaCache[cacheKey] = url;
+  try { localStorage.setItem(cacheKey, url); } catch(e) {}
   const el = document.getElementById('modalCover');
   if (el) el.innerHTML = `<img src="${url}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
 }
 
+
+function uploadCapa(input) {
+  if (!input.files || !input.files[0] || !livroAtual) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const url = e.target.result;
+    capaCache[livroAtual.serie] = url;
+    const el = document.getElementById('modalCover');
+    if (el) el.innerHTML = `<img src="${url}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
+    showToast('✅ Capa atualizada!');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
 function recarregarCapa() {
   if (!livroAtual) return;
-  // Limpar cache em memória e rebuscar
-  delete capaCache[livroAtual.serie];
+  const cacheKey = 'capa_' + livroAtual.serie.replace(/[^a-zA-Z0-9]/g,'_').slice(0,40);
+  delete capaCache[cacheKey];
+  try { localStorage.removeItem(cacheKey); } catch(e) {}
   buscarCapa(livroAtual);
 }
 
@@ -853,7 +883,11 @@ render();
     </div>
     <div class="modal-dica">
       <span>💡 Passe o mouse ou clique em qualquer série para ver o resumo</span>
-      <button class="btn-reload-capa" onclick="recarregarCapa()" title="Buscar outra capa">🔄 Trocar capa</button>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="btn-reload-capa" onclick="recarregarCapa()" title="Buscar outra capa">🔄 Trocar capa</button>
+        <button class="btn-upload-capa" onclick="document.getElementById('inputCapaUpload').click()" title="Usar imagem do computador">📁 Carregar imagem</button>
+        <input type="file" id="inputCapaUpload" class="input-capa-hidden" accept="image/*" onchange="uploadCapa(this)">
+      </div>
     </div>
   </div>
 </div>
