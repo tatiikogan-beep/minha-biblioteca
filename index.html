@@ -607,23 +607,22 @@ function abrirResumo(idx){
   buscarCapa(livro);
 }
 
+// Cache em memória (funciona em arquivo local e GitHub Pages)
+const capaCache = {};
+
 async function buscarCapa(livro) {
   const coverEl = document.getElementById('modalCover');
   coverEl.innerHTML = '<span class="modal-cover-placeholder">📚</span>';
 
-  const cacheKey = 'capa_' + livro.serie.replace(/[^a-zA-Z0-9]/g,'_').slice(0,40);
+  const cacheKey = livro.serie;
 
-  // 1. Cache local
-  try {
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      coverEl.innerHTML = `<img src="${cached}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
-      return;
-    }
-  } catch(e) {}
+  // 1. Cache em memória
+  if (capaCache[cacheKey]) {
+    coverEl.innerHTML = `<img src="${capaCache[cacheKey]}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
+    return;
+  }
 
   // 2. Definir título de busca
-  // Para séries: usar título do 1º livro. Para únicos: usar nome do livro (= serie)
   let titulo = livro.serie;
   if (livro.tipo === 'serie' && livro.seq) {
     const primeiro = livro.seq.find(b => b.s === 'tem' && !b.t.startsWith('──')) || livro.seq[0];
@@ -637,7 +636,6 @@ async function buscarCapa(livro) {
     return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,'').trim();
   }
 
-  // Match forte: pelo menos 60% das palavras do título buscado devem aparecer no retornado
   function matchForte(retornado, buscado) {
     const palavrasBuscadas = normalizar(buscado).split(/\s+/).filter(p=>p.length>2);
     const ret = normalizar(retornado);
@@ -651,14 +649,12 @@ async function buscarCapa(livro) {
       const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8`);
       const d = await r.json();
       if (!d.items) return null;
-      // Preferir match forte com título E autor
       for (const item of d.items) {
         const t = item.volumeInfo?.title || '';
         const a = (item.volumeInfo?.authors||[]).join(' ');
         const thumb = item.volumeInfo?.imageLinks?.thumbnail;
         if (thumb && matchForte(t, titulo) && matchForte(a, livro.autor)) return thumb;
       }
-      // Fallback: só match forte com título
       for (const item of d.items) {
         const t = item.volumeInfo?.title || '';
         const thumb = item.volumeInfo?.imageLinks?.thumbnail;
@@ -668,25 +664,22 @@ async function buscarCapa(livro) {
     } catch(e) { return null; }
   }
 
-  // Tentativas em ordem de precisão
   let url = await buscar(`intitle:"${titulo}" inauthor:"${livro.autor}"`);
   if (!url) url = await buscar(`intitle:"${titulo}"`);
+  if (!url) url = await buscar(`${titulo} ${livro.autor}`);
 
   if (!url) return;
 
   url = url.replace('http://','https://').replace('zoom=1','zoom=2');
-  try { localStorage.setItem(cacheKey, url); } catch(e) {}
+  capaCache[cacheKey] = url;
   const el = document.getElementById('modalCover');
   if (el) el.innerHTML = `<img src="${url}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
 }
 
 function recarregarCapa() {
   if (!livroAtual) return;
-  // Limpar cache e rebuscar
-  try {
-    const cacheKey = 'capa_' + livroAtual.serie.replace(/[^a-zA-Z0-9]/g,'_').slice(0,40);
-    localStorage.removeItem(cacheKey);
-  } catch(e) {}
+  // Limpar cache em memória e rebuscar
+  delete capaCache[livroAtual.serie];
   buscarCapa(livroAtual);
 }
 
