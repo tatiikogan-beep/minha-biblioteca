@@ -119,6 +119,58 @@
   .ordem-num { display:inline-block; width:20px; height:20px; border-radius:50%; background:#4527A0; color:#fff; font-size:10px; font-weight:700; text-align:center; line-height:20px; margin-right:4px; flex-shrink:0; }
   #emptyMsg { text-align: center; padding: 3rem; color: #aaa; font-size: 14px; display: none; }
   .status-cell { min-width: 130px; }
+
+  /* ── Modo Edição ── */
+  .btn-editar { position:fixed; bottom:24px; right:24px; background:#1a1a1a; color:#fff; border:none; border-radius:50px; padding:12px 22px; font-size:13px; font-weight:500; cursor:pointer; z-index:900; box-shadow:0 4px 16px rgba(0,0,0,0.25); display:flex; align-items:center; gap:8px; transition:background 0.15s; }
+  .btn-editar:hover { background:#333; }
+  .btn-editar.ativo { background:#c0392b; }
+  .modo-edicao tbody tr { cursor:default !important; }
+  .modo-edicao tbody tr:hover td { background:transparent !important; }
+  .edit-actions { display:none; gap:4px; }
+  .modo-edicao .edit-actions { display:flex; }
+  .btn-edit, .btn-del { border:none; border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer; font-weight:500; white-space:nowrap; }
+  .btn-edit { background:#E8F0FE; color:#1a73e8; }
+  .btn-edit:hover { background:#d2e3fc; }
+  .btn-del { background:#FDECEC; color:#c0392b; }
+  .btn-del:hover { background:#fad4d4; }
+  .btn-add-serie { display:none; width:100%; margin:10px 0; padding:10px; border:1.5px dashed #ccc; border-radius:8px; background:transparent; color:#888; font-size:13px; cursor:pointer; }
+  .btn-add-serie:hover { border-color:#888; color:#444; background:#fafaf8; }
+  .modo-edicao .btn-add-serie { display:block; }
+
+  /* ── Modal de Edição ── */
+  .edit-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; display:none; align-items:center; justify-content:center; padding:1rem; overflow-y:auto; }
+  .edit-overlay.open { display:flex; }
+  .edit-modal { background:#fff; border-radius:14px; max-width:680px; width:100%; padding:28px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:fadeUp 0.2s ease; max-height:90vh; overflow-y:auto; }
+  .edit-modal h2 { font-size:16px; font-weight:600; margin-bottom:20px; }
+  .edit-field { margin-bottom:14px; }
+  .edit-field label { display:block; font-size:11px; font-weight:600; color:#666; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:5px; }
+  .edit-field input, .edit-field select, .edit-field textarea { width:100%; padding:8px 10px; border:0.5px solid #ccc; border-radius:8px; font-size:13px; font-family:inherit; background:#fafafa; outline:none; }
+  .edit-field input:focus, .edit-field select:focus, .edit-field textarea:focus { border-color:#888; background:#fff; }
+  .edit-field textarea { min-height:90px; resize:vertical; }
+  .edit-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .edit-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .seq-editor { border:0.5px solid #e0dfd8; border-radius:8px; overflow:hidden; }
+  .seq-editor-header { display:grid; grid-template-columns:1fr 80px 80px 32px; gap:6px; padding:6px 10px; background:#f5f4f0; font-size:10px; font-weight:600; color:#999; text-transform:uppercase; }
+  .seq-item-edit { display:grid; grid-template-columns:1fr 80px 80px 32px; gap:6px; padding:6px 10px; border-top:0.5px solid #f0efe8; align-items:center; }
+  .seq-item-edit input { padding:4px 7px; font-size:12px; }
+  .seq-item-edit select { padding:4px 5px; font-size:11px; }
+  .btn-rm-vol { background:#FDECEC; color:#c0392b; border:none; border-radius:5px; width:26px; height:26px; cursor:pointer; font-size:14px; line-height:1; }
+  .btn-add-vol { display:block; width:calc(100% - 20px); margin:8px 10px; padding:6px; border:1px dashed #ccc; border-radius:6px; background:transparent; color:#888; font-size:12px; cursor:pointer; }
+  .btn-add-vol:hover { border-color:#888; color:#444; }
+  .edit-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; padding-top:16px; border-top:0.5px solid #f0efe8; }
+  .btn-salvar { background:#1a1a1a; color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:500; cursor:pointer; }
+  .btn-salvar:hover { background:#333; }
+  .btn-cancelar { background:#f0efe8; color:#555; border:none; border-radius:8px; padding:9px 20px; font-size:13px; cursor:pointer; }
+  .btn-cancelar:hover { background:#e0dfd8; }
+
+  /* ── Exportar JSON ── */
+  .btn-export { position:fixed; bottom:24px; right:160px; background:#185FA5; color:#fff; border:none; border-radius:50px; padding:12px 18px; font-size:13px; font-weight:500; cursor:pointer; z-index:900; box-shadow:0 4px 16px rgba(0,0,0,0.2); transition:background 0.15s; }
+  .btn-export:hover { background:#1a6bc7; }
+
+  /* ── Toast ── */
+  .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#1a1a1a; color:#fff; padding:10px 20px; border-radius:50px; font-size:13px; z-index:2000; opacity:0; transition:opacity 0.2s; pointer-events:none; }
+  .toast.show { opacity:1; }
+
 </style>
 </head>
 <body>
@@ -228,7 +280,7 @@ const livros = [
   {serie:"A Fúria das Chamas",resumo:"Em uma cidade onde vampiros e humanos coexistem em tensão constante, uma jovem com poderes incomuns é arrastada para as guerras das facções sobrenaturais. Olivia Rose Darling constrói uma fantasia urbana com romance intenso e ação bem coreografada. A protagonista descobre que seus poderes a tornam valiosa demais para os dois lados do conflito. O gancho é a corrida para entender sua própria natureza antes que os outros a controlem.",autor:"Olivia Rose Darling",tipo:"unico",genero:"fantasia",seq:[{t:"A Fúria das Chamas",s:"tem",lido:false}],plano:null,status:"unico"},
   {serie:"A Garota da Casa ao Lado",resumo:"Uma adolescente desaparece em uma comunidade aparentemente segura e os vizinhos percebem que viram sinais mas não agiram. O thriller social de Phoebe Morgan expõe como a indiferença coletiva permite o horror individual. A culpa compartilhada de toda uma vizinhança é o verdadeiro antagonista. Perturbador na sua normalidade.",autor:"Phoebe Morgan",tipo:"unico",genero:"suspense",seq:[{t:"A Garota da Casa ao Lado",s:"tem",lido:false}],plano:null,status:"unico"},
   {serie:"A Garota no Espelho",resumo:"Duas gêmeas idênticas são separadas ao nascer e criadas em países diferentes. Quando uma delas morre sob circunstâncias suspeitas, a sobrevivente herda a vida da irmã — literalmente. Rose Carlyle constrói um thriller de identidade com tensão impressionante e uma reviravolta final inesquecível. Uma das surpresas mais marcantes da ficção recente.",autor:"Rose Carlyle",tipo:"unico",genero:"suspense",seq:[{t:"A Garota no Espelho",s:"tem",lido:true}],plano:null,status:"unico"},
-  {serie:"A Guerra das Papoulas",resumo:"Em um mundo inspirado na China imperial, Rin é uma órfã que passa no exame mais difícil do Império para estudar na academia de guerra mais prestigiada. Ela descobre que possui poderes de chama ligados a deuses proibidos. Quando a guerra chega, Rin precisa decidir até onde vai para proteger os que ama. A série é conhecida pela brutalidade honesta da guerra e pelo custo real do poder.",autor:"R. F. Kuang",tipo:"serie",genero:"fantasia",seq:[{t:"A Guerra das Papoulas (#1)",s:"tem",lido:false},{t:"A Deusa em Chamas (#2)",s:"tem",lido:false},{t:"A República do Dragão (#3)",s:"tem",lido:false}],plano:null,status:"completa"},
+  {serie:"A Guerra das Papoulas",resumo:"Em um mundo inspirado na China imperial, Rin é uma órfã que passa no exame mais difícil do Império para estudar na academia de guerra mais prestigiada. Ela descobre que possui poderes de chama ligados a deuses proibidos. Quando a guerra chega, Rin precisa decidir até onde vai para proteger os que ama. A série é conhecida pela brutalidade honesta da guerra e pelo custo real do poder.",autor:"R. F. Kuang",tipo:"serie",genero:"fantasia",seq:[{t:"A Guerra das Papoulas (#1)",s:"tem",lido:true},{t:"A Deusa em Chamas (#2)",s:"tem",lido:false},{t:"A República do Dragão (#3)",s:"tem",lido:false}],plano:null,status:"completa"},
   {serie:"A Ilha",resumo:"Uma família em férias em uma ilha remota da Austrália tem seu barco roubado e fica presa com um grupo de foragidos perigosos. O thriller de sobrevivência de Adrian McKinty é de tirar o fôlego, com cada decisão tendo consequências imediatas e fatais. A tensão não alivia por uma única página. Um dos thrillers mais intensos dos últimos anos.",autor:"Adrian McKinty",tipo:"unico",genero:"suspense",seq:[{t:"A Ilha",s:"tem",lido:true}],plano:null,status:"unico"},
   {serie:"A Inquilina",resumo:"Uma nova inquilina descobre que a moradora anterior desapareceu misteriosamente. Freida McFadden constrói um thriller de revelações graduais onde cada capítulo adiciona uma camada de suspeita. A linha entre paranoia e intuição nunca fica clara. O final surpreende mesmo leitores experientes do gênero.",autor:"Freida McFadden",tipo:"unico",genero:"suspense",seq:[{t:"A Inquilina",s:"tem",lido:false}],plano:null,status:"unico"},
   {serie:"A Lenda de Meneka",resumo:"Meneka é uma apsara — dançarina celestial — enviada pelos deuses para seduzir e destruir o sábio Kaushika. Mas ao aproximar-se do mortal, ela descobre que nem os deuses são o que parecem. Inspirada na mitologia hindu, a história explora livre-arbítrio, divindade e o que significa ser humano. O gancho é a transformação de uma arma em protagonista de seu próprio destino.",autor:"Kritika H. Rao",tipo:"unico",genero:"fantasia",seq:[{t:"A Lenda de Meneka",s:"tem",lido:false}],plano:null,status:"unico"},
@@ -332,7 +384,7 @@ const livros = [
   {serie:"Red Queen",resumo:"Mare Barrow vive em um mundo dividido entre Silvers — com poderes mágicos — e Reds, sem poderes. Quando ela demonstra poderes impossíveis sendo de sangue vermelho, é escondida pela família real. Entre príncipes rivais e uma rebelião crescente, ninguém é de fiar. A série é ágil, com reviravoltas fortes e a lição de que qualquer um pode trair.",autor:"Victoria Aveyard",tipo:"serie",genero:"fantasia",seq:[{t:"A Rainha Vermelha",s:"tem",lido:false},{t:"Espada de Vidro",s:"tem",lido:false},{t:"A Prisão do Rei",s:"tem",lido:false},{t:"Tempestade de Guerra",s:"tem",lido:false},{t:"Trono Destruído (novelas)",s:"tem",lido:false},{t:"Coroa Cruel (novela)",s:"tem",lido:false}],plano:"sugestao",ordemSug:10,status:"completa"},
   {serie:"Red Rising",resumo:"Darrow é um minerador do nível mais baixo de Marte, acreditando trabalhar pelo bem da humanidade. Ao descobrir uma grande mentira que sustenta toda a sociedade, é transformado para se infiltrar na elite e derrubá-la de dentro. A série começa como distopia e evolui para uma space opera épica. Pierce Brown cria uma das jornadas de herói mais emocionantes da ficção científica.",autor:"Pierce Brown",tipo:"serie",genero:"scifi",seq:[{t:"1. Fúria Vermelha",s:"tem",lido:false},{t:"2. Filho Dourado",s:"tem",lido:false},{t:"3. Estrela da Manhã",s:"tem",lido:false},{t:"4. Ferro e Ouro",s:"tem",lido:false},{t:"5. Era das Trevas",s:"tem",lido:false},{t:"6. Light Bringer — sem tradução PT-BR",s:"falta",lido:false},{t:"7. Red God — aguarda lançamento",s:"lan",lido:false}],plano:null,status:"misto"},
   {serie:"Reverência Indomável",resumo:"Em um mundo onde a magia é extraída de criaturas sagradas, uma jovem descobre que seu dom de cura pode ser tanto uma benção quanto uma arma. Rebecca Ross constrói um romance de fantasia com uma protagonista gentil em um mundo que não recompensa a gentileza. O romance com o comandante que deveria ser seu inimigo é desenvolvido com cuidado. Uma fantasia de slow burn emocionalmente rica.",autor:"Rebecca Ross",tipo:"unico",genero:"fantasia",seq:[{t:"Reverência Indomável",s:"tem",lido:false}],plano:null,status:"unico"},
-  {serie:"Safira de Prata / Diamante Dourado",resumo:"Em um mundo de lobisomens e clãs rivais, uma jovem descobre que seu destino está ligado ao alfa mais poderoso e mais perigoso de todos. Laura Reggiani, autora brasileira, constrói uma romantasia de mundo sobrenatural com um romance intenso e bem construído. A série é conhecida pela química entre os protagonistas e pelo worldbuilding de alcatéias e hierarquias de poder. Um fenômeno da literatura brasileira de fantasia.",autor:"Laura Reggiani",tipo:"serie",genero:"fantasia",seq:[{t:"Safira de Prata Vol. 1",s:"tem",lido:false},{t:"Safira de Prata Vol. 2",s:"tem",lido:false},{t:"Diamante Dourado Vol. 1",s:"tem",lido:false},{t:"Diamante Dourado Vol. 2",s:"tem",lido:false},{t:"Joias da Alcateia (Temise)",s:"tem",lido:false}],plano:"lendo",ordemSug:2,status:"completa"},
+  {serie:"Safira de Prata / Diamante Dourado",resumo:"Em um mundo de lobisomens e clãs rivais, uma jovem descobre que seu destino está ligado ao alfa mais poderoso e mais perigoso de todos. Laura Reggiani, autora brasileira, constrói uma romantasia de mundo sobrenatural com um romance intenso e bem construído. A série é conhecida pela química entre os protagonistas e pelo worldbuilding de alcatéias e hierarquias de poder. Um fenômeno da literatura brasileira de fantasia.",autor:"Laura Reggiani",tipo:"serie",genero:"fantasia",seq:[{t:"Safira de Prata Vol. 1",s:"tem",lido:true},{t:"Safira de Prata Vol. 2",s:"tem",lido:true},{t:"Diamante Dourado Vol. 1",s:"tem",lido:true},{t:"Diamante Dourado Vol. 2",s:"tem",lido:true},{t:"Joias da Alcateia (Temise)",s:"tem",lido:true}],plano:"lendo",ordemSug:2,status:"completa"},
   {serie:"Seis de Corvos",resumo:"Na perigosa cidade portuária de Ketterdam, Kaz Brekker monta uma equipe improvável para o golpe mais impossível do mundo: invadir a fortaleza mais segura já construída. Leigh Bardugo criou personagens com histórias individuais tão ricas quanto a missão coletiva. Considerada por muitos a melhor obra do universo Grisha. A construção dos golpes e as reviravoltas são de tirar o fôlego.",autor:"Leigh Bardugo",tipo:"serie",genero:"fantasia",seq:[{t:"Six of Crows",s:"tem",lido:false},{t:"Crooked Kingdom",s:"tem",lido:false}],plano:"sugestao",ordemSug:5,status:"completa"},
   {serie:"Strange the Dreamer",resumo:"Lazlo Strange é um bibliotecário sonhador obcecado com a cidade lendária de Weep — cujo nome todos misteriosamente esqueceram. Quando uma expedição parte para lá, ele consegue uma vaga improvável. No destino, ele encontra Sarai, uma jovem com poderes de sonho, e um segredo sombrio que paira literalmente sobre a cidade. O romance entre o sonhador e a filha dos deuses é um dos mais belos da fantasia recente.",autor:"Laini Taylor",tipo:"serie",genero:"fantasia",seq:[{t:"Um Estranho Sonhador",s:"tem",lido:false},{t:"A Musa dos Pesadelos (#2)",s:"tem",lido:false}],plano:null,status:"completa"},
   {serie:"Suicidas",resumo:"Uma jovem que tenta se matar encontra um estranho que lhe oferece um pacto perturbador: ele a ajudará a morrer da forma que ela quiser, mas ela precisa ajudá-lo a criar a morte perfeita para outras pessoas. Raphael Montes, autor brasileiro, cria um thriller sobre obsessão e manipulação que não se deixa categorizar facilmente. Perturbador e impossível de esquecer. Uma das obras mais controversas da literatura brasileira contemporânea.",autor:"Raphael Montes",tipo:"unico",genero:"suspense",seq:[{t:"Suicidas",s:"tem",lido:false}],plano:null,status:"unico"},
@@ -353,7 +405,7 @@ const livros = [
   {serie:"Universo De Sangue e Cinzas",resumo:"Poppy é uma guerreira escolhida pelos deuses, mantida em isolamento e destinada a um sacrifício sagrado. Quando Hawke — seu guarda mais perigoso — entra em sua vida, tudo o que ela acreditava começa a desmoronar. A série de Jennifer L. Armentrout é um dos maiores fenômenos da romantasia dos últimos anos, com worldbuilding rico e reviravoltas de identidade impactantes. O romance é intenso e o universo se expande a cada volume.",autor:"Jennifer L. Armentrout",tipo:"serie",genero:"fantasia",seq:[{t:"1. De Sangue e Cinzas (Sangue e Cinzas #1)",s:"tem",lido:false},{t:"2. Um Reino de Carne e Fogo (Sangue e Cinzas #2)",s:"tem",lido:false},{t:"3. A Coroa de Ossos Dourados (Sangue e Cinzas #3)",s:"tem",lido:false},{t:"4. Uma Sombra na Brasa (Carne e Fogo #1 — spin-off)",s:"tem",lido:false},{t:"5. A Guerra das Duas Rainhas (Sangue e Cinzas #4)",s:"tem",lido:false},{t:"6. Uma Luz na Chama (Carne e Fogo #2)",s:"tem",lido:false},{t:"7. Uma Alma de Cinzas e Sangue (Sangue e Cinzas #5)",s:"tem",lido:false},{t:"8. Um Fogo na Carne (Carne e Fogo #3)",s:"tem",lido:false},{t:"9. Visões de Carne e Sangue (compêndio/extra)",s:"tem",lido:false}],plano:null,status:"completa"},
   {serie:"Verity",resumo:"Um escritor contratado para continuar a série de livros de uma autora paralítica encontra em sua casa um manuscrito autobiográfico que confessa crimes horríveis. Colleen Hoover joga com a questão: é um manuscrito real ou ficção? A tensão entre o narrador e a autora cria um suspense sufocante. A ambiguidade moral final é proposital — e perfeita.",autor:"Colleen Hoover",tipo:"unico",genero:"suspense",seq:[{t:"Verity",s:"tem",lido:true}],plano:null,status:"unico"},
   {serie:"Will Trent / Grant County",resumo:"A médica legista Sara Linton e o agente Will Trent investigam crimes violentos na Georgia com uma dinâmica de parceria que evolui ao longo de muitos volumes. Karin Slaughter não poupa o leitor de violência e consequências reais. Personagens com profundidade emocional rara no gênero policial. A continuidade entre os volumes recompensa leitores que acompanham a série desde o início.",autor:"Karin Slaughter",tipo:"serie",genero:"suspense",seq:[{t:"Gênese",s:"tem",lido:false},{t:"Fissura",s:"tem",lido:false},{t:"Destroçados",s:"tem",lido:false},{t:"A Boa Filha",s:"tem",lido:false},{t:"A Esposa Silenciosa",s:"tem",lido:false},{t:"Queda",s:"tem",lido:true},{t:"Esposa Perfeita",s:"tem",lido:false},{t:"Ninguém Pode Saber",s:"tem",lido:false},{t:"Depois Daquela Noite",s:"tem",lido:false},{t:"Somos Todos Culpados",s:"tem",lido:false},{t:"Por Que Mentimos",s:"tem",lido:false},{t:"Outros títulos (verificar)",s:"falta",lido:false}],plano:null,status:"incompleta"},
-  {serie:"Zodiac Academy",resumo:"Darcy e Tory Vega descobrem que são princesas de um mundo de Fae — e são imediatamente enviadas para a academia mais brutal que existe. Os quatro príncipes da escola têm como missão fazê-las desistir. Caroline Peckham e Susanne Valenti criam um universo de astrologia, poderes elementais e política feérica. A série é conhecida pela intensidade emocional e pelos romances múltiplos ao longo dos volumes.",autor:"Caroline Peckham & Susanne Valenti",tipo:"serie",genero:"fantasia",seq:[{t:"#1 The Awakening",s:"tem",lido:true},{t:"#2 Ruthless Fae",s:"tem",lido:true},{t:"#3 The Reckoning",s:"tem",lido:true},{t:"#4 Shadow Princess",s:"tem",lido:true},{t:"#5 Cursed Fates",s:"tem",lido:true},{t:"#5.5 The Big A.S.S Party",s:"tem",lido:false},{t:"#5.6 Seth on the Moon",s:"tem",lido:false},{t:"#6 Fated Throne",s:"tem",lido:true},{t:"#7 Heartless Sky",s:"tem",lido:true},{t:"#8 Sorrow and Starlight",s:"tem",lido:true},{t:"#8.5 Beyond the Veil",s:"tem",lido:false},{t:"#9 Restless Stars",s:"tem",lido:false}],plano:"lendo",ordemSug:1,status:"completa"},
+  {serie:"Zodiac Academy",resumo:"Darcy e Tory Vega descobrem que são princesas de um mundo de Fae — e são imediatamente enviadas para a academia mais brutal que existe. Os quatro príncipes da escola têm como missão fazê-las desistir. Caroline Peckham e Susanne Valenti criam um universo de astrologia, poderes elementais e política feérica. A série é conhecida pela intensidade emocional e pelos romances múltiplos ao longo dos volumes.",autor:"Caroline Peckham & Susanne Valenti",tipo:"serie",genero:"fantasia",seq:[{t:"#1 The Awakening",s:"tem",lido:true},{t:"#2 Ruthless Fae",s:"tem",lido:true},{t:"#3 The Reckoning",s:"tem",lido:true},{t:"#4 Shadow Princess",s:"tem",lido:true},{t:"#5 Cursed Fates",s:"tem",lido:true},{t:"#5.5 The Big A.S.S Party",s:"tem",lido:true},{t:"#5.6 Seth on the Moon",s:"tem",lido:true},{t:"#6 Fated Throne",s:"tem",lido:true},{t:"#7 Heartless Sky",s:"tem",lido:true},{t:"#8 Sorrow and Starlight",s:"tem",lido:true},{t:"#8.5 Beyond the Veil",s:"tem",lido:true},{t:"#9 Restless Stars",s:"tem",lido:true}],plano:"lendo",ordemSug:1,status:"completa"},
   {serie:"Reign of Remnants",resumo:"Rhya Fleetwood é uma halfling em um mundo onde sua espécie é executada por temor à magia. Quando é salva da forca pelo misterioso Comandante Scythe, descobre que uma marca em seu peito a identifica como uma Remanescente — uma das quatro almas destinadas a restaurar o equilíbrio mágico de um reino moribundo. Arrastada através de territórios perigosos, precisa dominar um poder que nunca pediu enquanto resiste à atração pelo homem que a capturou. Bestseller #1 do Sunday Times, a trilogia de romantasia épica que dominou 2025.",autor:"Julie Johnson",tipo:"serie",genero:"fantasia",seq:[{t:"As Teias do Vento (#1)",s:"tem",lido:false},{t:"The Sea Spinner (#2)",s:"tem",lido:false},{t:"Livro 3 (não anunciado)",s:"lan",lido:false}],plano:null,ordemSug:0,status:"aguarda"},
   {serie:"Robert Langdon",resumo:"O professor de simbologia Robert Langdon é arrastado para conspirações globais envolvendo arte, religião, ciência e sociedades secretas. Cada livro o coloca no centro de uma corrida contra o tempo para decifrar pistas históricas. Dan Brown criou um dos personagens mais reconhecíveis do thriller moderno. Você possui os volumes 4 e 5 — Inferno e Origem — sem os três primeiros da série.",autor:"Dan Brown",tipo:"serie",genero:"suspense",seq:[{t:"O Código Da Vinci (#1)",s:"falta",lido:false},{t:"Anjos e Demônios (#2)",s:"falta",lido:false},{t:"O Símbolo Perdido (#3)",s:"falta",lido:false},{t:"Inferno (#4)",s:"tem",lido:false},{t:"Origem (#5)",s:"tem",lido:false}],plano:null,ordemSug:0,status:"incompleta"},
   {serie:"Art Mages of Lure",resumo:"Em um mundo onde artistas infundem magia em suas obras, uma pintora cujos quadros têm consequências perigosas demais para serem expostos é recrutada para uma missão que exige usar seus talentos proibidos. Jordan Rivet constrói um sistema de magia visual original e inventivo em um universo de intrigas artísticas. Primeiro volume de uma série de fantasia ainda em andamento.",autor:"Jordan Rivet",tipo:"serie",genero:"fantasia",seq:[{t:"Curse Painter (#1)",s:"tem",lido:false},{t:"Próximos volumes (a anunciar)",s:"lan",lido:false}],plano:null,ordemSug:0,status:"aguarda"},
@@ -405,7 +457,17 @@ const livros = [
   {serie:"The War of Lost Hearts",resumo:"Tisaanah é uma escrava com poderes raros que faz pacto com Maxantarius, o mago mais poderoso e temido da era. Carissa Broadbent constrói trilogia de fantasia épica com romance lento e intenso. A autora de Coroas de Nyaxia mostra o mesmo domínio de personagens complexos. Trilogia completa.",autor:"Carissa Broadbent",tipo:"serie",genero:"fantasia",seq:[{t:"Daughter of No Worlds (#1)",s:"tem",lido:false},{t:"Children of Fallen Gods (#2)",s:"tem",lido:false},{t:"Mother of Death & Dawn (#3)",s:"tem",lido:false},{t:"Ashen Son (novela companion)",s:"tem",lido:false}],plano:null,ordemSug:0,status:"completa"},
   {serie:"Ala D",resumo:"Uma mulher é internada em uma ala psiquiátrica contra sua vontade e questiona se está perdendo a sanidade — ou se alguém quer que ela acredite nisso. Freida McFadden usa o ambiente hospitalar para criar thriller claustrofóbico sobre manipulação e gaslighting institucional.",autor:"Freida McFadden",tipo:"unico",genero:"suspense",seq:[{t:"Ala D",s:"tem",lido:false}],plano:null,ordemSug:0,status:"unico"},
   {serie:"O Castelo Animado",resumo:"Sophie é amaldiçoada pela Bruxa do Deserto e transformada em uma velha de 90 anos. Para quebrar a maldição, refugia-se no Castelo Ambulante de Howl, feiticeiro jovem, vaidoso e misterioso. Diana Wynne Jones criou um dos romances de fantasia mais amados e inventivos da literatura. Clássico absoluto.",autor:"Diana Wynne Jones",tipo:"serie",genero:"fantasia",seq:[{t:"O Castelo Animado (#1)",s:"tem",lido:false},{t:"Castle in the Air (#2)",s:"falta",lido:false},{t:"House of Many Ways (#3)",s:"falta",lido:false}],plano:null,ordemSug:0,status:"incompleta"},
-  {serie:"Born of Blood and Ash",resumo:"Nova série de Jennifer L. Armentrout no mesmo universo de Sangue e Cinzas, focada em novos personagens e conflitos. Born of Blood and Ash e Primal of Blood and Bone são os dois primeiros volumes. Série em andamento.",autor:"Jennifer L. Armentrout",tipo:"serie",genero:"fantasia",seq:[{t:"Born of Blood and Ash (#1)",s:"tem",lido:false},{t:"Primal of Blood and Bone (#2)",s:"tem",lido:false},{t:"Volumes seguintes (aguardam publicação)",s:"lan",lido:false}],plano:null,ordemSug:0,status:"aguarda"}];
+  {serie:"Born of Blood and Ash",resumo:"Nova série de Jennifer L. Armentrout no mesmo universo de Sangue e Cinzas, focada em novos personagens e conflitos. Born of Blood and Ash e Primal of Blood and Bone são os dois primeiros volumes. Série em andamento.",autor:"Jennifer L. Armentrout",tipo:"serie",genero:"fantasia",seq:[{t:"Born of Blood and Ash (#1)",s:"tem",lido:false},{t:"Primal of Blood and Bone (#2)",s:"tem",lido:false},{t:"Volumes seguintes (aguardam publicação)",s:"lan",lido:false}],plano:null,ordemSug:0,status:"aguarda"},
+  {serie:"Estilhaça-me",resumo:"Juliette Ferrars tem um toque que pode matar — desde criança foi mantida isolada por ser considerada uma arma. Quando o Reestablishment a recruta para uso militar, ela conhece Aaron Warner, comandante frio e misterioso, e Adam, o único que resiste ao seu poder. Tahereh Mafi constrói uma distopia YA com prosa poética e intensa, focada em identidade, abuso de poder e amor. Série completa em 6 volumes.",autor:"Tahereh Mafi",tipo:"serie",genero:"fantasia",seq:[{t:"Estilhaça-me (#1)",s:"tem",lido:false},{t:"Liberta-me (#2)",s:"tem",lido:false},{t:"Ignita-me (#3 — Desafia-me)",s:"tem",lido:false},{t:"Restaura-me (#4)",s:"tem",lido:false},{t:"Recorda-me (#5 — Incendeia-me)",s:"tem",lido:false},{t:"Imagina-me (#6)",s:"tem",lido:false}],plano:null,ordemSug:0,status:"completa"},
+  {serie:"O Golem e o Gênio",resumo:"Em 1899, Nova York. Chava é um golem de argila criado para servir — seu mestre morre na travessia do Atlântico e ela chega livre e sem propósito. Ahmad é um gênio do cobre, acidentalmente libertado após séculos de aprisionamento. Os dois se encontram no Lower East Side e formam uma amizade improvável entre seres sobrenaturais tentando existir no mundo humano. Helene Wecker mistura folclore judaico e árabe com ficção histórica de Nova York.",autor:"Helene Wecker",tipo:"unico",genero:"fantasia",seq:[{t:"O Golem e o Gênio",s:"tem",lido:false}],plano:null,ordemSug:0,status:"unico"},
+  {serie:"Ascensão dos Lobos",resumo:"Série de romantasia de Sable Sorensen ambientada em um mundo de fae e lobisomens com política de alcateia e romance intenso. A Ascensão dos Lobos é o primeiro volume; Fury Bound o segundo. Ambos adquiridos em PT-BR.",autor:"Sable Sorensen",tipo:"serie",genero:"fantasia",seq:[{t:"A Ascensão dos Lobos (#1)",s:"tem",lido:false},{t:"Fury Bound (#2)",s:"tem",lido:false}],plano:null,ordemSug:0,status:"completa"},
+  {serie:"Samantha Shannon — Mundo do Priorado",resumo:"O Priorado da Laranjeira é uma fantasia épica standalone ambientada em um mundo matriarcal com dragões e uma guerra milenar entre Oriente e Ocidente. Um Dia de Céu Noturno é uma novela companion set no mesmo universo. Samantha Shannon cria um worldbuilding denso com protagonistas femininas complexas e política de dragões magistral.",autor:"Samantha Shannon",tipo:"serie",genero:"fantasia",seq:[{t:"O Priorado da Laranjeira",s:"tem",lido:false},{t:"Um Dia de Céu Noturno (novela companion)",s:"tem",lido:false}],plano:null,ordemSug:0,status:"completa"},
+  {serie:"Sete Espinhos Mortais",resumo:"Uma jovem é convocada para um torneio mortal entre sete candidatos — cada um representando um dos pecados capitais. Para sobreviver, ela precisa usar inteligência, magia e alianças perigosas num ambiente de dark academia sobrenatural. Amber Hamilton constrói uma romantasia com atmosfera densa e competição letal.",autor:"Amber Hamilton",tipo:"unico",genero:"fantasia",seq:[{t:"Sete Espinhos Mortais",s:"tem",lido:false}],plano:null,ordemSug:0,status:"unico"},
+  {serie:"Ciclo da Herança",resumo:"Eragon, um jovem fazendeiro, encontra uma pedra que resulta ser um ovo de dragão. Ao nascer, a dragoa Saphira o transforma em Cavaleiro de Dragão — última esperança contra o rei tirano Galbatorix. Christopher Paolini escreveu o primeiro volume aos 15 anos e construiu um dos universos de fantasia épica YA mais amados da última geração. Série completa em 4 volumes.",autor:"Christopher Paolini",tipo:"serie",genero:"fantasia",seq:[{t:"Eragon (#1)",s:"tem",lido:false},{t:"Eldest (#2)",s:"tem",lido:false},{t:"Brisingr (#3)",s:"tem",lido:false},{t:"Herança (#4)",s:"tem",lido:false}],plano:null,ordemSug:0,status:"completa"},
+  {serie:"The Book of Azrael",resumo:"Em um mundo onde deuses e mortais coexistem em guerra fria frágil, Liam é o assassino mais letal do reino dos deuses — e Dianna é uma Caçadora que deveria ser seu inimigo. Amber V. Nicole constrói uma romantasia épica com um sistema de magia divina, romance enemies-to-lovers de alta tensão e um universo expansivo. Série em andamento com 3 volumes publicados.",autor:"Amber V. Nicole",tipo:"serie",genero:"fantasia",seq:[{t:"The Book of Azrael (#1)",s:"tem",lido:false},{t:"The Throne of Broken Gods (#2)",s:"tem",lido:false},{t:"The Dawn of the Cursed Queen (#3)",s:"tem",lido:false},{t:"Volumes seguintes (aguardam publicação)",s:"lan",lido:false}],plano:null,ordemSug:0,status:"aguarda"},
+  {serie:"Harry Potter",resumo:"Harry Potter descobre no seu aniversário de 11 anos que é um bruxo — e que é famoso no mundo mágico por ter sobrevivido ao ataque do bruxo mais temível de todos quando bebê. Cada volume acompanha um ano em Hogwarts, escola de magia, enquanto Harry e seus amigos crescem e enfrentam o retorno de Voldemort. J. K. Rowling criou o universo fantástico mais popular da história da literatura contemporânea.",autor:"J. K. Rowling",tipo:"serie",genero:"fantasia",seq:[{t:"A Pedra Filosofal (#1)",s:"tem",lido:false},{t:"A Câmara dos Segredos (#2)",s:"tem",lido:false},{t:"O Prisioneiro de Azkaban (#3)",s:"tem",lido:false},{t:"O Cálice de Fogo (#4)",s:"tem",lido:false},{t:"A Ordem da Fênix (#5)",s:"tem",lido:false},{t:"O Príncipe Misterioso (#6)",s:"tem",lido:false},{t:"Os Talismãs da Morte (#7)",s:"tem",lido:false}],plano:null,ordemSug:0,status:"completa"},
+  {serie:"Academia de Vampiros",resumo:"Rose Hathaway é uma dhampir — metade humana, metade vampira — treinada para proteger os Moroi, vampiros vivos com poderes elementais. Quando ela e sua melhor amiga Lissa fogem da academia e são capturadas, Rose descobre que o mundo dos vampiros é mais perigoso e político do que imaginava. Richelle Mead criou um dos universos paranormais YA mais populares dos anos 2000. Série em 6 volumes.",autor:"Richelle Mead",tipo:"serie",genero:"fantasia",seq:[{t:"Academia de Vampiros (#1)",s:"tem",lido:false},{t:"Livros seguintes (verificar)",s:"falta",lido:false}],plano:null,ordemSug:0,status:"incompleta"},
+  {serie:"Um Lugar Bem Longe Daqui",resumo:"Kya Clark cresceu sozinha nos pântanos da Carolina do Norte depois que a família a abandonou. Tornou-se especialista em biologia local — e suspeita quando um jovem da cidade é encontrado morto. Delia Owens mistura romance, natureza e suspense num romance literário de rara beleza atmosférica. Um dos livros mais vendidos da última década.",autor:"Delia Owens",tipo:"unico",genero:"romance",seq:[{t:"Um Lugar Bem Longe Daqui",s:"tem",lido:false}],plano:null,ordemSug:0,status:"unico"}];
 
 // ── helpers ─────────────────────────────────────────
 function getSL(l){const p=l.seq.filter(b=>b.s==='tem');if(!p.length)return'nao';if(p.every(b=>b.lido))return'lido';if(p.some(b=>b.lido))return'pendente';return'nao';}
@@ -462,12 +524,16 @@ function render(){
         const isM=q&&b.t.toLowerCase().includes(q);
         const tc='seq-titulo'+(isM?' match':'')+(b.lido?' lido-t':'');
         return `<div class="seq-item"><span class="ic ${icC}">${icI}</span>${l.tipo!=='unico'?`<span class="seq-num">${i+1}.</span>`:''}<span class="${tc}">${hl(b.t,q)}</span></div>`;
-      }).join('');
+      }).join('') + (modoEdicao ? `<tr><td colspan="4" style="padding:6px 14px"><button class="btn-add-serie" style="display:block" onclick="abrirEdit(null)">+ Nova Série / Livro</button></td></tr>` : '');
       const livroIdx = livros.findIndex(x=>x.serie===l.serie);
-      return `<tr onclick="abrirResumo(${livroIdx})" style="cursor:pointer">
-        <td class="serie-nome"
-          onmouseenter="iniciarHover(${livroIdx})"
-          onmouseleave="cancelarHover()">${hl(l.serie,q)}</td>
+      return `<tr onclick="modoEdicao?null:abrirResumo(${livroIdx})" style="cursor:${modoEdicao?'default':'pointer'}">
+        <td class="serie-nome">
+          <span onmouseenter="modoEdicao?null:iniciarHover(${livroIdx})" onmouseleave="cancelarHover()">${hl(l.serie,q)}</span>
+          <div class="edit-actions" style="margin-top:5px">
+            <button class="btn-edit" onclick="event.stopPropagation();abrirEdit(${livroIdx})">✏️ Editar</button>
+            <button class="btn-del" onclick="event.stopPropagation();excluirLivro(${livroIdx})">🗑️ Excluir</button>
+          </div>
+        </td>
         <td class="autor-nome">${hl(l.autor,q)}</td>
         <td class="seq-col">${seqHtml}</td>
         <td class="status-cell">
@@ -631,6 +697,150 @@ function closeModal(){
   document.body.style.overflow='';
 }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+// ── Sistema de Edição ─────────────────────────────────
+let modoEdicao = false;
+let editIdx = null; // null = novo
+
+function toggleEdicao() {
+  modoEdicao = !modoEdicao;
+  document.body.classList.toggle('modo-edicao', modoEdicao);
+  const btn = document.getElementById('btnEditar');
+  btn.textContent = modoEdicao ? '✕ Sair da Edição' : '✏️ Editar Biblioteca';
+  btn.classList.toggle('ativo', modoEdicao);
+  render();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Abrir modal de edição ──
+function abrirEdit(idx) {
+  editIdx = idx;
+  const l = idx !== null ? livros[idx] : null;
+  document.getElementById('editTitulo').textContent = l ? 'Editar: ' + l.serie : 'Nova Série / Livro';
+  document.getElementById('ef-serie').value  = l ? l.serie   : '';
+  document.getElementById('ef-autor').value  = l ? l.autor   : '';
+  document.getElementById('ef-tipo').value   = l ? l.tipo    : 'serie';
+  document.getElementById('ef-genero').value = l ? l.genero  : 'fantasia';
+  document.getElementById('ef-status').value = l ? l.status  : 'completa';
+  document.getElementById('ef-resumo').value = l ? l.resumo  : '';
+  const plano = l ? (l.plano || '') : '';
+  document.getElementById('ef-plano').value  = plano;
+  document.getElementById('ef-ordem').value  = l ? (l.ordemSug || '') : '';
+  document.getElementById('ef-ordem-wrap').style.display = plano ? 'block' : 'none';
+  document.getElementById('ef-plano').onchange = function() {
+    document.getElementById('ef-ordem-wrap').style.display = this.value ? 'block' : 'none';
+  };
+  // Volumes
+  const seq = l ? l.seq : [{t:'', s:'tem', lido:false}];
+  renderSeqEditor(seq);
+  document.getElementById('editOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharEdit() {
+  document.getElementById('editOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── Editor de volumes ──
+function renderSeqEditor(seq) {
+  const list = document.getElementById('seqList');
+  list.innerHTML = seq.map((v, i) => `
+    <div class="seq-item-edit" id="vol-${i}">
+      <input type="text" value="${v.t.replace(/"/g,'&quot;')}" placeholder="Título do volume" id="vt-${i}">
+      <select id="vs-${i}">
+        <option value="tem"  ${v.s==='tem'  ?'selected':''}>✓ Tenho</option>
+        <option value="falta"${v.s==='falta'?'selected':''}>! Falta</option>
+        <option value="lan"  ${v.s==='lan'  ?'selected':''}>… Aguarda</option>
+      </select>
+      <select id="vl-${i}">
+        <option value="false"${!v.lido?'selected':''}>Não lido</option>
+        <option value="true" ${v.lido?'selected':''}>Lido</option>
+      </select>
+      <button class="btn-rm-vol" onclick="removeVolume(${i})">×</button>
+    </div>`).join('');
+}
+
+function getSeqFromEditor() {
+  const items = document.querySelectorAll('#seqList .seq-item-edit');
+  return Array.from(items).map((el, i) => ({
+    t: document.getElementById('vt-'+i).value.trim(),
+    s: document.getElementById('vs-'+i).value,
+    lido: document.getElementById('vl-'+i).value === 'true'
+  })).filter(v => v.t);
+}
+
+function addVolume() {
+  const seq = getSeqFromEditor();
+  seq.push({t:'', s:'tem', lido:false});
+  renderSeqEditor(seq);
+}
+
+function removeVolume(i) {
+  const seq = getSeqFromEditor();
+  seq.splice(i, 1);
+  renderSeqEditor(seq);
+}
+
+// ── Salvar edição ──
+function salvarEdicao() {
+  const novoLivro = {
+    serie:    document.getElementById('ef-serie').value.trim(),
+    autor:    document.getElementById('ef-autor').value.trim(),
+    tipo:     document.getElementById('ef-tipo').value,
+    genero:   document.getElementById('ef-genero').value,
+    status:   document.getElementById('ef-status').value,
+    resumo:   document.getElementById('ef-resumo').value.trim(),
+    plano:    document.getElementById('ef-plano').value || null,
+    ordemSug: parseInt(document.getElementById('ef-ordem').value) || 0,
+    seq:      getSeqFromEditor()
+  };
+  if (!novoLivro.serie) { alert('Informe o nome da série/livro.'); return; }
+  if (!novoLivro.seq.length) { alert('Adicione ao menos um volume.'); return; }
+
+  const acao = editIdx !== null ? 'salvar as alterações em' : 'adicionar';
+  const msg = editIdx !== null
+    ? `Confirma as alterações em "${novoLivro.serie}"?`
+    : `Confirma a adição de "${novoLivro.serie}"?`;
+  if (!confirm(msg)) return;
+
+  if (editIdx !== null) {
+    livros[editIdx] = novoLivro;
+    showToast('✅ Salvo: ' + novoLivro.serie);
+  } else {
+    livros.push(novoLivro);
+    showToast('✅ Adicionado: ' + novoLivro.serie);
+  }
+  fecharEdit();
+  render();
+}
+
+// ── Excluir ──
+function excluirLivro(idx) {
+  const l = livros[idx];
+  if (!confirm('Excluir "' + l.serie + '"?')) return;
+  livros.splice(idx, 1);
+  showToast('🗑️ Removido: ' + l.serie);
+  render();
+}
+
+// ── Exportar JSON ──
+function exportarJSON() {
+  const data = JSON.stringify(livros, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'biblioteca_tati.json';
+  a.click();
+  showToast('💾 JSON exportado!');
+}
+
 render();
 </script>
 <!-- Modal de Resumo -->
@@ -654,5 +864,75 @@ render();
     </div>
   </div>
 </div>
+
+<!-- Botão Modo Edição -->
+<button class="btn-editar" id="btnEditar" onclick="toggleEdicao()">✏️ Editar Biblioteca</button>
+<button class="btn-export" onclick="exportarJSON()" title="Exportar dados como JSON">💾 Exportar</button>
+<div class="toast" id="toast"></div>
+
+<!-- Modal de Edição -->
+<div class="edit-overlay" id="editOverlay" onclick="if(event.target===this)fecharEdit()">
+<div class="edit-modal">
+  <button class="modal-close" onclick="fecharEdit()">✕</button>
+  <h2 id="editTitulo">Nova Série / Livro</h2>
+  <div class="edit-row">
+    <div class="edit-field"><label>Nome da Série / Livro</label><input id="ef-serie" type="text" placeholder="Ex: ACOTAR"></div>
+    <div class="edit-field"><label>Autor(a)</label><input id="ef-autor" type="text" placeholder="Ex: Sarah J. Maas"></div>
+  </div>
+  <div class="edit-row">
+    <div class="edit-field"><label>Tipo</label>
+      <select id="ef-tipo">
+        <option value="serie">📚 Série</option>
+        <option value="unico">📖 Livro Único</option>
+      </select>
+    </div>
+    <div class="edit-field"><label>Gênero</label>
+      <select id="ef-genero">
+        <option value="fantasia">🏰 Fantasia</option>
+        <option value="suspense">🔍 Suspense/Thriller</option>
+        <option value="romance">💛 Romance/Ficção</option>
+        <option value="scifi">🚀 Ficção Científica</option>
+      </select>
+    </div>
+  </div>
+  <div class="edit-row">
+    <div class="edit-field"><label>Status da Coleção</label>
+      <select id="ef-status">
+        <option value="completa">✅ Completa</option>
+        <option value="incompleta">⚠️ Falta Livros</option>
+        <option value="aguarda">⏳ Aguarda Lançamento</option>
+        <option value="misto">🔀 Falta + Aguarda</option>
+        <option value="unico">📖 Livro Único</option>
+      </select>
+    </div>
+    <div class="edit-field"><label>Plano de Leitura</label>
+      <select id="ef-plano">
+        <option value="">— Nenhum —</option>
+        <option value="lendo">🔄 Lendo Agora</option>
+        <option value="proximo">📌 Próximo</option>
+        <option value="sugestao">💡 Sugestão</option>
+      </select>
+    </div>
+  </div>
+  <div class="edit-field" id="ef-ordem-wrap" style="display:none">
+    <label>Ordem na Fila (número)</label>
+    <input id="ef-ordem" type="number" min="1" placeholder="Ex: 5">
+  </div>
+  <div class="edit-field"><label>Resumo</label><textarea id="ef-resumo" placeholder="Descrição da série exibida no modal..."></textarea></div>
+  <div class="edit-field">
+    <label>Volumes / Sequência</label>
+    <div class="seq-editor" id="seqEditor">
+      <div class="seq-editor-header"><span>Título do Volume</span><span>Posse</span><span>Lido?</span><span></span></div>
+      <div id="seqList"></div>
+    </div>
+    <button class="btn-add-vol" onclick="addVolume()">+ Adicionar volume</button>
+  </div>
+  <div class="edit-footer">
+    <button class="btn-cancelar" onclick="fecharEdit()">Cancelar</button>
+    <button class="btn-salvar" onclick="salvarEdicao()">💾 Salvar</button>
+  </div>
+</div>
+</div>
+
 </body>
 </html>
