@@ -101,6 +101,81 @@ function loadData() {
 }
 function persist(livros) { try { localStorage.setItem('biblioteca_data_v3', JSON.stringify(livros)); } catch (e) {} }
 
+/* ============================================================
+   Capas automáticas (Google Books) — busca por título + autor,
+   roda no navegador e guarda em cache no localStorage.
+   Precedência: capa manual (l.cover) > capa automática > placeholder.
+   ============================================================ */
+const AUTOCOVERS_KEY = 'biblioteca_autocovers_v1';
+let autoCovers = {};
+try { const r = localStorage.getItem(AUTOCOVERS_KEY); if (r) autoCovers = JSON.parse(r) || {}; } catch (e) { autoCovers = {}; }
+function saveAutoCovers() { try { localStorage.setItem(AUTOCOVERS_KEY, JSON.stringify(autoCovers)); } catch (e) {} }
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+function isDivider(t) { return /^\s*[─—–]/.test(t || ''); }
+function cleanTitle(t) {
+  return (t || '')
+    .replace(/──.*?──/g, ' ')
+    .replace(/^\s*#?\d+(\.\d+)?[.\)]?\s+/, '')
+    .replace(/\(#?\d+\)/g, ' ')
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/\bVol\.?\s*\d+/gi, ' ')
+    .replace(/#\d+(\.\d+)?/g, ' ')
+    .replace(/\s*[—–-]\s*$/, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+function coverQueryTitle(l) {
+  const reals = (l.seq || []).filter(v => !isDivider(v.t));
+  let base = (reals[0] && reals[0].t) ? reals[0].t : l.serie;
+  let t = cleanTitle(base);
+  if (t.length < 3) t = cleanTitle(l.serie) || l.serie;
+  return t;
+}
+async function fetchCover(l) {
+  const title = coverQueryTitle(l);
+  const author = (l.autor || '').split(/&| e |,|\//)[0].trim();
+  let q = 'intitle:' + title;
+  if (author) q += ' inauthor:' + author;
+  const url = 'https://www.googleapis.com/books/v1/volumes?q=' + encodeURIComponent(q) + '&maxResults=4&printType=books&country=BR';
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('http ' + res.status);
+  const j = await res.json();
+  const items = j.items || [];
+  for (const it of items) {
+    const img = it.volumeInfo && it.volumeInfo.imageLinks;
+    if (img) {
+      let u = img.thumbnail || img.smallThumbnail;
+      if (u) return u.replace(/^http:/, 'https:').replace(/&edge=curl/, '');
+    }
+  }
+  return ''; // pesquisado e sem capa — não tenta de novo
+}
+let _refreshT = null;
+function scheduleCoverRefresh() {
+  if (_refreshT) return;
+  _refreshT = setTimeout(() => {
+    _refreshT = null;
+    renderFila(); renderResults();
+    if (state.modalId != null) renderOverlays();
+  }, 500);
+}
+async function fetchMissingCovers() {
+  if (!window.fetch) return;
+  const todo = state.livros.filter(l => !l.cover && !(l.serie in autoCovers));
+  let i = 0; const CONC = 4;
+  async function worker() {
+    while (i < todo.length) {
+      const l = todo[i++];
+      try { autoCovers[l.serie] = await fetchCover(l); saveAutoCovers(); scheduleCoverRefresh(); }
+      catch (e) { /* erro de rede/limite: não guarda, tenta na próxima abertura */ }
+      await sleep(140);
+    }
+  }
+  await Promise.all(Array.from({ length: CONC }, () => worker()));
+  scheduleCoverRefresh();
+}
+
 const prefs0 = loadPrefs();
 const state = {
   livros: loadData(),
@@ -178,6 +253,7 @@ function initials(name) {
 function enrich(l) {
   const seq = Array.isArray(l.seq) ? l.seq : [];
   const isDiv = (t) => /^\s*[─—–]/.test(t || '');
+  const effCover = l.cover || autoCovers[l.serie] || '';
   const vols = seq.filter(v => !isDiv(v.t));
   const owned = vols.filter(v => v.s === 'tem');
   const ownedCount = owned.length;
@@ -207,8 +283,8 @@ function enrich(l) {
     id: l._id, serie: l.serie, autor: l.autor, tipo: l.tipo, tipoLabel: l.tipo === 'serie' ? 'Série' : 'Livro único',
     genero: l.genero, plano: l.plano, hasPlan: !!l.plano, planMetaObj: pMeta,
     status: l.status, statusMetaObj: sMeta,
-    resumo: l.resumo || '', cover: l.cover || '', hasCover: !!l.cover, coverGrad: coverGrad(l.genero),
-    coverBtnLabel: l.cover ? 'Trocar capa' : 'Adicionar capa',
+    resumo: l.resumo || '', cover: effCover, hasCover: !!effCover, coverGrad: coverGrad(l.genero),
+    coverBtnLabel: effCover ? 'Trocar capa' : 'Adicionar capa',
     initials: initials(l.serie), ownedCount, lidosCount, pct, progressLabel, leituraClass,
     seqView, ordem: l.ordemSug || 0,
     searchText: (l.serie + ' ' + l.autor + ' ' + genreLabel(l.genero) + ' ' + seq.map(v => v.t).join(' ')).toLowerCase(),
@@ -851,6 +927,7 @@ renderControls();
 renderFila();
 renderResults();
 renderOverlays();
+fetchMissingCovers();
 </script>
 </body>
 </html>
