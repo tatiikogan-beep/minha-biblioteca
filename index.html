@@ -106,7 +106,7 @@ function persist(livros) { try { localStorage.setItem('biblioteca_data_v3', JSON
    roda no navegador e guarda em cache no localStorage.
    Precedência: capa manual (l.cover) > capa automática > placeholder.
    ============================================================ */
-const AUTOCOVERS_KEY = 'biblioteca_autocovers_v1';
+const AUTOCOVERS_KEY = 'biblioteca_autocovers_v2';
 let autoCovers = {};
 try { const r = localStorage.getItem(AUTOCOVERS_KEY); if (r) autoCovers = JSON.parse(r) || {}; } catch (e) { autoCovers = {}; }
 function saveAutoCovers() { try { localStorage.setItem(AUTOCOVERS_KEY, JSON.stringify(autoCovers)); } catch (e) {} }
@@ -132,24 +132,26 @@ function coverQueryTitle(l) {
   if (t.length < 3) t = cleanTitle(l.serie) || l.serie;
   return t;
 }
+async function gbQuery(q) {
+  const url = 'https://www.googleapis.com/books/v1/volumes?q=' + encodeURIComponent(q) + '&maxResults=5&printType=books&country=BR';
+  const res = await fetch(url);
+  if (!res.ok) { const e = new Error('http ' + res.status); e.status = res.status; throw e; }
+  const j = await res.json();
+  for (const it of (j.items || [])) {
+    const img = it.volumeInfo && it.volumeInfo.imageLinks;
+    const u = img && (img.thumbnail || img.smallThumbnail);
+    if (u) return u.replace(/^http:/, 'https:').replace(/&edge=curl/, '');
+  }
+  return '';
+}
 async function fetchCover(l) {
   const title = coverQueryTitle(l);
   const author = (l.autor || '').split(/&| e |,|\//)[0].trim();
-  let q = 'intitle:' + title;
-  if (author) q += ' inauthor:' + author;
-  const url = 'https://www.googleapis.com/books/v1/volumes?q=' + encodeURIComponent(q) + '&maxResults=4&printType=books&country=BR';
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('http ' + res.status);
-  const j = await res.json();
-  const items = j.items || [];
-  for (const it of items) {
-    const img = it.volumeInfo && it.volumeInfo.imageLinks;
-    if (img) {
-      let u = img.thumbnail || img.smallThumbnail;
-      if (u) return u.replace(/^http:/, 'https:').replace(/&edge=curl/, '');
-    }
-  }
-  return ''; // pesquisado e sem capa — não tenta de novo
+  // 1) estrita (título + autor); 2) ampla (título autor); 3) só título
+  let u = await gbQuery('intitle:' + title + (author ? ' inauthor:' + author : ''));
+  if (!u && author) u = await gbQuery(title + ' ' + author);
+  if (!u) u = await gbQuery('intitle:' + title);
+  return u; // '' = pesquisado e sem capa
 }
 let _refreshT = null;
 function scheduleCoverRefresh() {
@@ -163,13 +165,22 @@ function scheduleCoverRefresh() {
 async function fetchMissingCovers() {
   if (!window.fetch) return;
   const todo = state.livros.filter(l => !l.cover && !(l.serie in autoCovers));
-  let i = 0; const CONC = 4;
+  let i = 0; const CONC = 3;
   async function worker() {
     while (i < todo.length) {
       const l = todo[i++];
-      try { autoCovers[l.serie] = await fetchCover(l); saveAutoCovers(); scheduleCoverRefresh(); }
-      catch (e) { /* erro de rede/limite: não guarda, tenta na próxima abertura */ }
-      await sleep(140);
+      let tries = 0, ok = false;
+      while (!ok) {
+        try {
+          autoCovers[l.serie] = await fetchCover(l);
+          ok = true; saveAutoCovers(); scheduleCoverRefresh();
+        } catch (e) {
+          // 429 = limite: espera e tenta de novo (sem cravar resultado)
+          if (e && e.status === 429 && tries < 4) { tries++; await sleep(1500 * tries); }
+          else ok = true; // outro erro: deixa pra próxima abertura
+        }
+      }
+      await sleep(250);
     }
   }
   await Promise.all(Array.from({ length: CONC }, () => worker()));
