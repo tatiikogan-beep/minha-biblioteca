@@ -326,9 +326,13 @@ function sorter() {
   }
   return (a, b) => a.serie.localeCompare(b.serie, 'pt-BR');
 }
-function computeStats() {
+function filteredLivros() {
+  return state.livros.filter(l => matchFilters(enrich(l)));
+}
+function computeStats(livros) {
+  livros = livros || state.livros;
   let total = 0, lidos = 0, series = 0, unicos = 0, lendo = 0, falta = 0, lan = 0;
-  state.livros.forEach(l => {
+  livros.forEach(l => {
     if (l.tipo === 'serie') series++; else unicos++;
     if (l.plano === 'lendo') lendo++;
     (l.seq || []).forEach(v => {
@@ -402,7 +406,7 @@ function statCard(iconName, accentBg, accentFg, value, label) {
     '<div style="font-size:10.5px;color:#8B8273;margin-top:5px;text-transform:uppercase;letter-spacing:0.08em;">' + label + '</div></div></div>';
 }
 function renderStats() {
-  const s = computeStats();
+  const s = computeStats(filteredLivros());
   const html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:14px;">' +
     '<div style="grid-column:span 2;min-width:248px;background:linear-gradient(135deg,#221E17,#14110E);border:1px solid rgba(200,162,74,0.24);border-radius:16px;box-shadow:0 8px 26px rgba(0,0,0,0.45);padding:18px 24px;display:flex;align-items:center;gap:20px;">' +
       '<div style="font-family:\'Spectral\',serif;font-weight:600;font-size:56px;line-height:0.9;color:#E7C766;">' + s.total + '</div>' +
@@ -735,7 +739,7 @@ function showToast(msg) {
    ============================================================ */
 function refreshData() { renderStats(); renderFila(); renderResults(); }
 
-function setFilter(k, v) { state.filters = { ...state.filters, [k]: v }; renderControls(); renderResults(); }
+function setFilter(k, v) { state.filters = { ...state.filters, [k]: v }; renderControls(); renderStats(); renderResults(); }
 function setLayout(v) { state.layout = v; savePrefs({ layout: v, sort: state.sort }); renderControls(); renderResults(); }
 function setSort(v) { state.sort = v; savePrefs({ layout: state.layout, sort: v }); renderControls(); renderResults(); }
 function toggleEdit() { state.editMode = !state.editMode; renderHdrActions(); renderResults(); }
@@ -889,7 +893,7 @@ document.addEventListener('input', (e) => {
   if (!t) return;
   const act = t.getAttribute('data-act');
   switch (act) {
-    case 'search': state.search = t.value; renderResults(); break;
+    case 'search': state.search = t.value; renderStats(); renderResults(); break;
     case 'draftSerie':
       state.draft.serie = t.value;
       { const ini = document.getElementById('bibl-draft-initials'); if (ini) ini.textContent = initials(t.value || ''); }
