@@ -614,15 +614,37 @@ function abrirResumo(idx){
 // Cache em memória (sessão) + localStorage (persistente)
 const capaCache = {};
 
+// Chave de cache única, usada por busca, upload e recarregamento (evita divergência)
+function cacheKeyFor(serie) {
+  return 'capa_' + (serie || '').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40);
+}
+
+// Renderiza a capa; em erro de carregamento limpa o cache (evita URL "envenenada") e mostra o placeholder
+function renderCapa(el, url, cacheKey) {
+  if (!el) return;
+  el.innerHTML = '';
+  const img = document.createElement('img');
+  img.alt = 'Capa';
+  img.onerror = function() {
+    if (cacheKey) {
+      delete capaCache[cacheKey];
+      try { localStorage.removeItem(cacheKey); } catch(e) {}
+    }
+    el.innerHTML = '<span class="modal-cover-placeholder">📚</span>';
+  };
+  img.src = url;
+  el.appendChild(img);
+}
+
 async function buscarCapa(livro) {
   const coverEl = document.getElementById('modalCover');
   coverEl.innerHTML = '<span class="modal-cover-placeholder">📚</span>';
 
-  const cacheKey = 'capa_' + livro.serie.replace(/[^a-zA-Z0-9]/g,'_').slice(0,40);
+  const cacheKey = cacheKeyFor(livro.serie);
 
   // 1. Cache em memória
   if (capaCache[cacheKey]) {
-    coverEl.innerHTML = `<img src="${capaCache[cacheKey]}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
+    renderCapa(coverEl, capaCache[cacheKey], cacheKey);
     return;
   }
 
@@ -631,7 +653,7 @@ async function buscarCapa(livro) {
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       capaCache[cacheKey] = cached;
-      coverEl.innerHTML = `<img src="${cached}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
+      renderCapa(coverEl, cached, cacheKey);
       return;
     }
   } catch(e) {}
@@ -658,36 +680,61 @@ async function buscarCapa(livro) {
     return matches / palavrasBuscadas.length >= 0.6;
   }
 
-  async function buscar(q) {
+  // Fonte primária: Open Library (capas amigáveis a hotlink dentro do iframe do Streamlit)
+  async function buscarOpenLibrary() {
     try {
-      const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8`);
+      const params = `title=${encodeURIComponent(titulo)}&author=${encodeURIComponent(livro.autor||'')}&limit=5&fields=title,author_name,cover_i`;
+      const r = await fetch(`https://openlibrary.org/search.json?${params}`);
+      if (!r.ok) return null;
       const d = await r.json();
-      if (!d.items) return null;
-      for (const item of d.items) {
-        const t = item.volumeInfo?.title || '';
-        const a = (item.volumeInfo?.authors||[]).join(' ');
-        const thumb = item.volumeInfo?.imageLinks?.thumbnail;
-        if (thumb && matchForte(t, titulo) && matchForte(a, livro.autor)) return thumb;
+      const docs = d.docs || [];
+      const toUrl = id => `https://covers.openlibrary.org/b/id/${id}-L.jpg?default=false`;
+      for (const doc of docs) {
+        if (doc.cover_i && matchForte(doc.title||'', titulo) && matchForte((doc.author_name||[]).join(' '), livro.autor)) return toUrl(doc.cover_i);
       }
-      for (const item of d.items) {
-        const t = item.volumeInfo?.title || '';
-        const thumb = item.volumeInfo?.imageLinks?.thumbnail;
-        if (thumb && matchForte(t, titulo)) return thumb;
+      for (const doc of docs) {
+        if (doc.cover_i && matchForte(doc.title||'', titulo)) return toUrl(doc.cover_i);
       }
       return null;
     } catch(e) { return null; }
   }
 
-  let url = await buscar(`intitle:"${titulo}" inauthor:"${livro.autor}"`);
-  if (!url) url = await buscar(`intitle:"${titulo}"`);
+  // Fallback: Google Books
+  async function buscarGoogle(q) {
+    try {
+      const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8`);
+      if (!r.ok) return null;
+      const d = await r.json();
+      if (!d.items) return null;
+      const limpar = t => (t||'').replace(/^http:/,'https:').replace(/([?&])zoom=\d+/,'$1zoom=2');
+      for (const item of d.items) {
+        const t = item.volumeInfo?.title || '';
+        const a = (item.volumeInfo?.authors||[]).join(' ');
+        const thumb = item.volumeInfo?.imageLinks?.thumbnail;
+        if (thumb && matchForte(t, titulo) && matchForte(a, livro.autor)) return limpar(thumb);
+      }
+      for (const item of d.items) {
+        const t = item.volumeInfo?.title || '';
+        const thumb = item.volumeInfo?.imageLinks?.thumbnail;
+        if (thumb && matchForte(t, titulo)) return limpar(thumb);
+      }
+      return null;
+    } catch(e) { return null; }
+  }
 
-  if (!url) return;
+  let url = await buscarOpenLibrary();
+  if (!url) url = await buscarGoogle(`intitle:"${titulo}" inauthor:"${livro.autor}"`);
+  if (!url) url = await buscarGoogle(`intitle:"${titulo}"`);
 
-  url = url.replace('http://','https://').replace('zoom=1','zoom=2');
+  const el = document.getElementById('modalCover');
+  if (!url) {
+    if (el) el.innerHTML = '<span class="modal-cover-placeholder" title="Capa não encontrada">📚</span>';
+    return;
+  }
+
   capaCache[cacheKey] = url;
   try { localStorage.setItem(cacheKey, url); } catch(e) {}
-  const el = document.getElementById('modalCover');
-  if (el) el.innerHTML = `<img src="${url}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
+  renderCapa(el, url, cacheKey);
 }
 
 
@@ -697,9 +744,10 @@ function uploadCapa(input) {
   const reader = new FileReader();
   reader.onload = function(e) {
     const url = e.target.result;
-    capaCache[livroAtual.serie] = url;
-    const el = document.getElementById('modalCover');
-    if (el) el.innerHTML = `<img src="${url}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=modal-cover-placeholder>📚</span>'">`;
+    const cacheKey = cacheKeyFor(livroAtual.serie);
+    capaCache[cacheKey] = url;
+    try { localStorage.setItem(cacheKey, url); } catch(e) {}
+    renderCapa(document.getElementById('modalCover'), url, cacheKey);
     showToast('✅ Capa atualizada!');
   };
   reader.readAsDataURL(file);
@@ -707,7 +755,7 @@ function uploadCapa(input) {
 }
 function recarregarCapa() {
   if (!livroAtual) return;
-  const cacheKey = 'capa_' + livroAtual.serie.replace(/[^a-zA-Z0-9]/g,'_').slice(0,40);
+  const cacheKey = cacheKeyFor(livroAtual.serie);
   delete capaCache[cacheKey];
   try { localStorage.removeItem(cacheKey); } catch(e) {}
   buscarCapa(livroAtual);
