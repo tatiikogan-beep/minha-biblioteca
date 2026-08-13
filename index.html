@@ -37,6 +37,29 @@
   .bibl-search:focus{border-color:#C8A24A!important;box-shadow:0 0 0 3px rgba(200,162,74,0.2)!important;}
   .bibl-input:focus{border-color:#C8A24A!important;box-shadow:0 0 0 3px rgba(200,162,74,0.18)!important;}
   .bibl-input2:focus{border-color:#C8A24A!important;}
+
+  /* ===== Responsivo — formato celular ===== */
+  @media (max-width: 640px){
+    #bibl-wrap{ padding:16px 14px 0 !important; }
+    #bibl-header{ min-height:96px !important; }
+    #bibl-header > img{ position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; object-fit:cover !important; }
+    .bibl-header-inner{ position:relative !important; z-index:3 !important; padding:12px 14px !important; gap:11px !important; flex-wrap:wrap !important; }
+    .bibl-header-inner > div:nth-child(2){ min-width:0 !important; flex:1 1 140px !important; }
+    .bibl-crest{ width:40px !important; height:40px !important; }
+    .bibl-title{ font-size:21px !important; }
+    .bibl-stats-grid{ grid-template-columns:1fr 1fr !important; gap:10px !important; }
+    .bibl-total-card{ grid-column:1 / -1 !important; min-width:0 !important; padding:14px 16px !important; gap:14px !important; }
+    .bibl-total-num{ font-size:40px !important; }
+    .bibl-controls-box{ padding:14px 14px !important; }
+    .bibl-grid-wrap{ grid-template-columns:repeat(2, 1fr) !important; gap:10px !important; }
+    .bibl-list-card{ grid-template-columns:52px 1fr !important; gap:12px !important; padding:11px 12px !important; }
+    .bibl-list-card > div:nth-child(1){ grid-row:1 / span 2 !important; width:52px !important; height:72px !important; }
+    .bibl-list-card > div:nth-child(2){ grid-column:2 !important; }
+    .bibl-list-card > div:nth-child(3){ grid-column:2 !important; align-items:flex-start !important; }
+    .bibl-modal-overlay{ padding:0 !important; align-items:stretch !important; }
+    .bibl-modal{ max-width:100% !important; width:100% !important; min-height:100vh !important; max-height:100vh !important; border-radius:0 !important; margin:0 !important; }
+    .bibl-modal-pad{ padding:18px !important; }
+  }
 </style>
 </head>
 <body>
@@ -394,16 +417,16 @@ function mount() {
       '<div style="position:absolute;inset:0;background:linear-gradient(270deg,#100E0B 0%, rgba(16,14,11,0.82) 9%, rgba(16,14,11,0) 19%);"></div>' +
       '<div style="position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(0deg,#100E0B 0%, rgba(16,14,11,0));"></div>' +
       '<div style="position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 120px 16px rgba(16,14,11,0.5);"></div>' +
-      '<div style="position:absolute;inset:0;max-width:1200px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:16px;">' +
-        '<div style="width:46px;height:46px;border-radius:50%;background:rgba(200,162,74,0.12);border:1px solid rgba(200,162,74,0.4);display:flex;align-items:center;justify-content:center;color:#E7C766;flex:none;">' + icon('bookOpen', 23) + '</div>' +
+      '<div class="bibl-header-inner" style="position:absolute;inset:0;max-width:1200px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:16px;">' +
+        '<div class="bibl-crest" style="width:46px;height:46px;border-radius:50%;background:rgba(200,162,74,0.12);border:1px solid rgba(200,162,74,0.4);display:flex;align-items:center;justify-content:center;color:#E7C766;flex:none;">' + icon('bookOpen', 23) + '</div>' +
         '<div style="flex:1;min-width:200px;">' +
-          '<div style="font-family:\'Spectral\',serif;font-weight:600;font-size:28px;letter-spacing:0.05em;color:#E7C766;line-height:1;text-shadow:0 2px 10px rgba(0,0,0,0.6);">Biblioteca</div>' +
+          '<div class="bibl-title" style="font-family:\'Spectral\',serif;font-weight:600;font-size:28px;letter-spacing:0.05em;color:#E7C766;line-height:1;text-shadow:0 2px 10px rgba(0,0,0,0.6);">Biblioteca</div>' +
           '<div style="font-size:12.5px;letter-spacing:0.03em;color:#C2BAA8;margin-top:5px;text-shadow:0 1px 5px rgba(0,0,0,0.75);">Coleção pessoal &middot; organização por séries</div>' +
         '</div>' +
         '<div id="bibl-hdr-actions" style="display:flex;gap:10px;align-items:center;"></div>' +
       '</div>' +
     '</div>' +
-    '<div style="max-width:1200px;margin:0 auto;padding:24px 28px 0;">' +
+    '<div id="bibl-wrap" style="max-width:1200px;margin:0 auto;padding:24px 28px 0;">' +
       '<div id="bibl-stats" style="margin-bottom:18px;"></div>' +
       '<div id="bibl-controls" style="margin-bottom:18px;"></div>' +
       '<div id="bibl-fila"></div>' +
@@ -434,9 +457,9 @@ function statCard(iconName, accentBg, accentFg, value, label) {
 }
 function renderStats() {
   const s = computeStats(filteredLivros());
-  const html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:14px;">' +
-    '<div style="grid-column:span 2;min-width:248px;background:linear-gradient(135deg,#221E17,#14110E);border:1px solid rgba(200,162,74,0.24);border-radius:16px;box-shadow:0 8px 26px rgba(0,0,0,0.45);padding:18px 24px;display:flex;align-items:center;gap:20px;">' +
-      '<div style="font-family:\'Spectral\',serif;font-weight:600;font-size:56px;line-height:0.9;color:#E7C766;">' + s.total + '</div>' +
+  const html = '<div class="bibl-stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:14px;">' +
+    '<div class="bibl-total-card" style="grid-column:span 2;min-width:248px;background:linear-gradient(135deg,#221E17,#14110E);border:1px solid rgba(200,162,74,0.24);border-radius:16px;box-shadow:0 8px 26px rgba(0,0,0,0.45);padding:18px 24px;display:flex;align-items:center;gap:20px;">' +
+      '<div class="bibl-total-num" style="font-family:\'Spectral\',serif;font-weight:600;font-size:56px;line-height:0.9;color:#E7C766;">' + s.total + '</div>' +
       '<div style="border-left:1px solid rgba(200,162,74,0.2);padding-left:20px;">' +
         '<div style="font-family:\'Spectral\',serif;font-size:21px;font-weight:600;line-height:1.2;color:#F2EBDD;">Volumes na estante</div>' +
         '<div style="font-size:12.5px;color:#948B7A;margin-top:4px;">' + s.lidos + ' já lidos &middot; ' + s.pct + '% da coleção</div>' +
@@ -470,7 +493,7 @@ function renderControls() {
       '<span style="min-width:64px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#6E6557;">' + esc(g.label) + '</span>' +
       '<div style="display:flex;gap:7px;flex-wrap:wrap;">' + opts + '</div></div>';
   });
-  const html = '<div style="background:#1A1813;border:1px solid #2E2A22;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,0.4);padding:18px 20px;display:flex;flex-direction:column;gap:14px;">' +
+  const html = '<div class="bibl-controls-box" style="background:#1A1813;border:1px solid #2E2A22;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,0.4);padding:18px 20px;display:flex;flex-direction:column;gap:14px;">' +
     '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">' +
       '<div style="position:relative;flex:1;min-width:230px;">' +
         '<span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#6E6557;display:flex;">' + IC.search + '</span>' +
@@ -583,7 +606,7 @@ function renderGrade(items) {
         '</div>' +
       '</div></div>';
   });
-  return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:16px;">' + cards + '</div>';
+  return '<div class="bibl-grid-wrap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:16px;">' + cards + '</div>';
 }
 
 /* ============================================================
@@ -644,12 +667,12 @@ function detailModalHtml(it) {
     '</div>';
   }
 
-  return '<div data-act="closeModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.66);z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;animation:biblFade 180ms ease;">' +
-    '<div data-act="stop" style="background:#1B1812;border:1px solid #322D25;border-radius:18px;max-width:660px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.6);position:relative;animation:biblRise 220ms cubic-bezier(0.16,1,0.3,1);">' +
+  return '<div data-act="closeModal" class="bibl-modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.66);z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;animation:biblFade 180ms ease;">' +
+    '<div data-act="stop" class="bibl-modal" style="background:#1B1812;border:1px solid #322D25;border-radius:18px;max-width:660px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.6);position:relative;animation:biblRise 220ms cubic-bezier(0.16,1,0.3,1);">' +
       '<div style="position:absolute;top:14px;right:14px;z-index:2;">' +
         '<button data-act="closeModal" title="Fechar" class="bibl-close-btn" style="width:34px;height:34px;border-radius:9px;border:1px solid #3A352B;background:#221E17;color:#CBC3B2;cursor:pointer;display:flex;align-items:center;justify-content:center;">' + icon('close', 16) + '</button>' +
       '</div>' +
-      '<div style="padding:26px;">' +
+      '<div class="bibl-modal-pad" style="padding:26px;">' +
         '<div style="display:flex;gap:20px;align-items:flex-start;">' +
           '<div style="flex:none;">' +
             '<div style="width:118px;height:166px;border-radius:9px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,0.55);">' + coverInner(it, 32) + '</div>' +
@@ -713,9 +736,9 @@ function draftCoverHtml() {
 function editModalHtml() {
   const d = state.draft;
   const title = state.editId === 'new' ? 'Adicionar série' : 'Editar série';
-  return '<div data-act="closeEdit" style="position:fixed;inset:0;background:rgba(0,0,0,0.66);z-index:1100;display:flex;align-items:flex-start;justify-content:center;padding:40px 18px;overflow-y:auto;animation:biblFade 180ms ease;">' +
-    '<div data-act="stop" style="background:#1B1812;border:1px solid #322D25;border-radius:18px;max-width:680px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.6);position:relative;animation:biblRise 220ms cubic-bezier(0.16,1,0.3,1);margin:auto;">' +
-      '<div style="padding:26px;">' +
+  return '<div data-act="closeEdit" class="bibl-modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.66);z-index:1100;display:flex;align-items:flex-start;justify-content:center;padding:40px 18px;overflow-y:auto;animation:biblFade 180ms ease;">' +
+    '<div data-act="stop" class="bibl-modal" style="background:#1B1812;border:1px solid #322D25;border-radius:18px;max-width:680px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.6);position:relative;animation:biblRise 220ms cubic-bezier(0.16,1,0.3,1);margin:auto;">' +
+      '<div class="bibl-modal-pad" style="padding:26px;">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">' +
           '<div style="font-family:\'Spectral\',serif;font-size:23px;font-weight:600;color:#F2EBDD;">' + title + '</div>' +
           '<button data-act="closeEdit" title="Fechar" class="bibl-close-btn" style="width:34px;height:34px;border-radius:9px;border:1px solid #3A352B;background:#221E17;color:#CBC3B2;cursor:pointer;display:flex;align-items:center;justify-content:center;">' + icon('close', 16) + '</button>' +
