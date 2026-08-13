@@ -221,6 +221,7 @@ const state = {
   modalId: null,
   iaText: '',
   iaLoading: false,
+  coverLoading: false,
   editId: null,
   draft: null,
 };
@@ -676,7 +677,11 @@ function detailModalHtml(it) {
         '<div style="display:flex;gap:20px;align-items:flex-start;">' +
           '<div style="flex:none;">' +
             '<div style="width:118px;height:166px;border-radius:9px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,0.55);">' + coverInner(it, 32) + '</div>' +
-            '<label class="bibl-coverlabel" style="display:flex;align-items:center;justify-content:center;gap:5px;margin-top:8px;font-size:11px;color:#E7C766;cursor:pointer;border:1px solid #3A352B;border-radius:8px;padding:6px;">' +
+            '<button data-act="buscarCapa" data-id="' + it.id + '" ' + (state.coverLoading ? 'disabled ' : '') + 'class="bibl-ia-btn" style="width:118px;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:11px;font-weight:600;color:#E7C766;cursor:pointer;background:rgba(200,162,74,0.14);border:1px solid rgba(200,162,74,0.34);border-radius:8px;padding:7px;">' +
+              (state.coverLoading
+                ? '<span style="width:12px;height:12px;border:2px solid #3A352B;border-top-color:#E7C766;border-radius:50%;display:inline-block;animation:biblSpin 0.7s linear infinite;"></span> Buscando…'
+                : icon('search', 13) + '<span>Buscar capa</span>') + '</button>' +
+            '<label class="bibl-coverlabel" style="display:flex;align-items:center;justify-content:center;gap:5px;margin-top:7px;font-size:11px;color:#E7C766;cursor:pointer;border:1px solid #3A352B;border-radius:8px;padding:6px;">' +
               icon('image', 13) + '<span>' + esc(it.coverBtnLabel) + '</span>' +
               '<input type="file" accept="image/*" data-act="cover" data-id="' + it.id + '" style="display:none;"/></label>' +
           '</div>' +
@@ -918,6 +923,34 @@ function onCoverChange(id, e) {
   };
   reader.readAsDataURL(file); e.target.value = '';
 }
+// Busca de capa sob demanda (Google Books) — só quando o usuário clica.
+async function coverSearch(l) {
+  const author = (l.autor || '').split(/&| e |,|\//)[0].trim();
+  const cands = [];
+  if (l.serie) cands.push(l.serie);                          // nome limpo da série ou título do livro
+  const reals = (l.seq || []).filter(v => !isDivider(v.t));
+  if (reals[0]) cands.push(cleanTitle(reals[0].t));
+  for (const t of cands) {
+    if (!t || t.trim().length < 2) continue;
+    let u = await gbQuery('intitle:' + t + (author ? ' inauthor:' + author : ''));
+    if (!u && author) u = await gbQuery(t + ' ' + author);
+    if (u) return u;
+  }
+  return cands[0] ? await gbQuery('intitle:' + cands[0]) : '';
+}
+async function buscarCapa(id) {
+  const l = findLivro(id); if (!l || state.coverLoading) return;
+  if (!window.fetch) { showToast('Busca de capa indisponível aqui.'); return; }
+  state.coverLoading = true; renderOverlays();
+  let msg = 'Nenhuma capa encontrada.';
+  try {
+    const u = await coverSearch(l);
+    if (u) { state.livros = state.livros.map(x => x._id === id ? { ...x, cover: u } : x); persist(state.livros); msg = 'Capa encontrada.'; }
+  } catch (e) { msg = 'Não foi possível buscar agora.'; }
+  state.coverLoading = false;
+  renderOverlays(); refreshData();
+  showToast(msg);
+}
 function onDraftCoverChange(e) {
   const f = e.target.files && e.target.files[0]; if (!f) return;
   const r = new FileReader();
@@ -946,6 +979,7 @@ document.addEventListener('click', (e) => {
     case 'closeEdit': closeEdit(); break;
     case 'gerarIA': gerarIA(); break;
     case 'salvarIA': salvarIA(); break;
+    case 'buscarCapa': buscarCapa(id); break;
     case 'addVol': addVol(); break;
     case 'removeVol': removeVol(Number(t.getAttribute('data-vol'))); break;
     case 'saveDraft': saveDraft(); break;
