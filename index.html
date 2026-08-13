@@ -222,6 +222,7 @@ const state = {
   iaText: '',
   iaLoading: false,
   coverLoading: false,
+  coverMsg: '',
   editId: null,
   draft: null,
 };
@@ -684,6 +685,9 @@ function detailModalHtml(it) {
             '<label class="bibl-coverlabel" style="display:flex;align-items:center;justify-content:center;gap:5px;margin-top:7px;font-size:11px;color:#E7C766;cursor:pointer;border:1px solid #3A352B;border-radius:8px;padding:6px;">' +
               icon('image', 13) + '<span>' + esc(it.coverBtnLabel) + '</span>' +
               '<input type="file" accept="image/*" data-act="cover" data-id="' + it.id + '" style="display:none;"/></label>' +
+            (state.coverMsg ? ('<div style="width:118px;margin-top:7px;font-size:10.5px;line-height:1.35;text-align:center;color:' +
+              (state.coverMsg.slice(0,2) === 'ok' ? '#9FD3B4' : (state.coverMsg.slice(0,3) === 'err' ? '#D98A8A' : '#948B7A')) + ';">' +
+              esc(state.coverMsg.split('|').slice(1).join('|')) + '</div>') : '') +
           '</div>' +
           '<div style="flex:1;min-width:0;padding-right:30px;">' +
             '<div style="font-family:\'Spectral\',serif;font-size:28px;font-weight:600;color:#F2EBDD;line-height:1.12;">' + esc(it.serie) + '</div>' +
@@ -815,8 +819,8 @@ function setLayout(v) { state.layout = v; savePrefs({ layout: v, sort: state.sor
 function setSort(v) { state.sort = v; savePrefs({ layout: state.layout, sort: v }); renderControls(); renderResults(); }
 function toggleEdit() { state.editMode = !state.editMode; renderHdrActions(); renderResults(); }
 
-function openModal(id) { state.modalId = id; state.iaText = ''; state.iaLoading = false; renderOverlays(); }
-function closeModal() { state.modalId = null; state.iaText = ''; state.iaLoading = false; renderOverlays(); }
+function openModal(id) { state.modalId = id; state.iaText = ''; state.iaLoading = false; state.coverLoading = false; state.coverMsg = ''; renderOverlays(); }
+function closeModal() { state.modalId = null; state.iaText = ''; state.iaLoading = false; state.coverLoading = false; state.coverMsg = ''; renderOverlays(); }
 
 /* ---- IA stub (fallback local) ---- */
 function pick(arr, seed) { return arr[Math.floor((seed) * arr.length) % arr.length]; }
@@ -940,16 +944,15 @@ async function coverSearch(l) {
 }
 async function buscarCapa(id) {
   const l = findLivro(id); if (!l || state.coverLoading) return;
-  if (!window.fetch) { showToast('Busca de capa indisponível aqui.'); return; }
-  state.coverLoading = true; renderOverlays();
-  let msg = 'Nenhuma capa encontrada.';
+  if (!window.fetch) { state.coverMsg = 'err|Busca indisponível neste ambiente.'; renderOverlays(); return; }
+  state.coverLoading = true; state.coverMsg = ''; renderOverlays();
+  let msg = 'none|Nenhuma capa encontrada — tente "Trocar capa".';
   try {
     const u = await coverSearch(l);
-    if (u) { state.livros = state.livros.map(x => x._id === id ? { ...x, cover: u } : x); persist(state.livros); msg = 'Capa encontrada.'; }
-  } catch (e) { msg = 'Não foi possível buscar agora.'; }
-  state.coverLoading = false;
+    if (u) { state.livros = state.livros.map(x => x._id === id ? { ...x, cover: u } : x); persist(state.livros); msg = 'ok|Capa encontrada.'; }
+  } catch (e) { msg = 'err|Não foi possível buscar (sem conexão com o serviço de capas).'; }
+  state.coverLoading = false; state.coverMsg = msg;
   renderOverlays(); refreshData();
-  showToast(msg);
 }
 function onDraftCoverChange(e) {
   const f = e.target.files && e.target.files[0]; if (!f) return;
