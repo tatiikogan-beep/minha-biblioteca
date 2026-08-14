@@ -383,7 +383,10 @@ function matchFilters(it) {
     if (f.colecao === 'incompleta') { if (it.status !== 'incompleta' && it.status !== 'misto') return false; }
     else if (it.status !== f.colecao) return false;
   }
-  if (f.leitura !== 'todos' && it.leituraClass !== f.leitura) return false;
+  if (f.leitura !== 'todos') {
+    if (f.leitura === 'naoclass') { if (it.status !== 'naoclass') return false; }
+    else if (it.leituraClass !== f.leitura) return false;
+  }
   if (s && it.searchText.indexOf(s) === -1) return false;
   return true;
 }
@@ -499,11 +502,11 @@ function renderStats() {
 
 /* ---- controls ---- */
 const FILTER_DEFS = [
-  { key: 'plano', label: 'Fila', opts: [['todos', 'Todas'], ['lendo', 'Lendo agora'], ['proximo', 'Próximas'], ['sugestao', 'Sugestões']] },
+  { key: 'plano', label: 'Fila', opts: [['todos', 'Todas'], ['lendo', 'Lendo agora'], ['proximo', 'Próximas']] },
   { key: 'genero', label: 'Gênero', opts: [['todos', 'Todos'], ['fantasia', 'Fantasia'], ['suspense', 'Suspense'], ['romance', 'Romance'], ['scifi', 'Ficção científica']] },
   { key: 'tipo', label: 'Tipo', opts: [['todos', 'Todos'], ['serie', 'Séries'], ['unico', 'Livros únicos']] },
   { key: 'colecao', label: 'Coleção', opts: [['todos', 'Todas'], ['completa', 'Completas'], ['incompleta', 'Faltam livros'], ['aguarda', 'Aguardando']] },
-  { key: 'leitura', label: 'Leitura', opts: [['todos', 'Todas'], ['lido', 'Lidas'], ['pendente', 'Em andamento'], ['nao', 'Não iniciadas']] },
+  { key: 'leitura', label: 'Leitura', opts: [['todos', 'Todas'], ['lido', 'Lidas'], ['nao', 'Não iniciadas'], ['naoclass', 'Não Classificada']] },
 ];
 function renderControls() {
   let filters = '';
